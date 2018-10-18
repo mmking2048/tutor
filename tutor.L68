@@ -1,0 +1,46 @@
+00003000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.04
+Created On: 10/17/2018 10:49:35 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : ECE 441 Design Project
+00000000                             3  * Written by : Michelle Yang
+00000000                             4  * Date       : 11/9/2018
+00000000                             5  * Description: Simple operating system for Easy 68K
+00000000                             6  *-----------------------------------------------------------        ORG     $1000
+00001000                             7          ORG     $1000
+00001000                             8          
+00001000= 4D 4F 4E 49 54 4F ...      9  PROMPT  DC.B    'MONITOR441> '  ;prompt
+0000100C= 00                        10          DC.B    $00
+0000100D                            11  BUFFER  DS.B    80              ;buffer for commands
+0000105D                            12          
+00003000                            13          ORG     $3000
+00003000                            14          
+00003000  48E7 0040                 15  START   MOVEM.L A1,-(SP)        ;save A1
+00003004                            16          
+00003004  227C 00001000             17          MOVEA.L #PROMPT,A1      
+0000300A  103C 000E                 18          MOVE.B  #14,D0
+0000300E  4E4F                      19          TRAP    #15             ;print prompt
+00003010                            20          
+00003010  227C 0000100D             21          MOVEA.L #BUFFER,A1
+00003016  103C 0002                 22          MOVE.B  #2,D0
+0000301A  4E4F                      23          TRAP    #15
+0000301C                            24          
+0000301C  60E2                      25          BRA     START            ;get next command
+0000301E                            26          
+0000301E  103C 0009                 27  EXIT    MOVE.B  #9,D0
+00003022  4E4F                      28          TRAP    #15
+00003024                            29          
+00003024                            30          END    START
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BUFFER              100D
+EXIT                301E
+PROMPT              1000
+START               3000
