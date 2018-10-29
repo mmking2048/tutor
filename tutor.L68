@@ -1,37 +1,284 @@
 00003000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.04
-Created On: 10/17/2018 10:49:35 PM
+Created On: 10/28/2018 10:57:25 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      : ECE 441 Design Project
 00000000                             3  * Written by : Michelle Yang
 00000000                             4  * Date       : 11/9/2018
 00000000                             5  * Description: Simple operating system for Easy 68K
-00000000                             6  *-----------------------------------------------------------        ORG     $1000
-00001000                             7          ORG     $1000
-00001000                             8          
-00001000= 4D 4F 4E 49 54 4F ...      9  PROMPT  DC.B    'MONITOR441> '  ;prompt
-0000100C= 00                        10          DC.B    $00
-0000100D                            11  BUFFER  DS.B    80              ;buffer for commands
-0000105D                            12          
-00003000                            13          ORG     $3000
-00003000                            14          
-00003000  48E7 0040                 15  START   MOVEM.L A1,-(SP)        ;save A1
-00003004                            16          
-00003004  227C 00001000             17          MOVEA.L #PROMPT,A1      
-0000300A  103C 000E                 18          MOVE.B  #14,D0
-0000300E  4E4F                      19          TRAP    #15             ;print prompt
-00003010                            20          
-00003010  227C 0000100D             21          MOVEA.L #BUFFER,A1
-00003016  103C 0002                 22          MOVE.B  #2,D0
-0000301A  4E4F                      23          TRAP    #15
-0000301C                            24          
-0000301C  60E2                      25          BRA     START            ;get next command
-0000301E                            26          
-0000301E  103C 0009                 27  EXIT    MOVE.B  #9,D0
-00003022  4E4F                      28          TRAP    #15
-00003024                            29          
-00003024                            30          END    START
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  *-----------------------------------------------------------
+00000000                             8  * Data segment
+00000000                             9  *-----------------------------------------------------------
+00001000                            10          ORG     $1000
+00001000                            11          
+00001000= 4D 4F 4E 49 54 4F ...     12  PROMPT  DC.B    'MONITOR441> '  ;prompt
+0000100C= 00                        13          DC.B    $00
+0000100D= 49 4E 56 41 4C 49 ...     14  INVALID DC.B    'INVALID COMMAND'
+0000101C= 00                        15          DC.B    $00
+0000101D                            16  
+0000101D                            17  INPUT   DS.B    80              ;buffer for commands
+0000106D                            18  
+0000106D                            19  COMP_TBL                        ;table of all commands
+0000106D= 48 45 4C 50               20          DC.B    'HELP'
+00001071= 00                        21          DC.B    $00
+00001072                            22          DS.B    1
+00001073= 4D 44 53 50               23          DC.B    'MDSP'
+00001077= 00                        24          DC.B    $00
+00001078                            25          DS.B    1
+00001079= 53 4F 52 54 57            26          DC.B    'SORTW'
+0000107E= 00                        27          DC.B    $00
+0000107F= 4D 4D                     28          DC.B    'MM'
+00001081= 00                        29          DC.B    $00
+00001082                            30          DS.B    3
+00001085= 4D 53                     31          DC.B    'MS'
+00001087= 00                        32          DC.B    $00
+00001088                            33          DS.B    3
+0000108B= 42 46                     34          DC.B    'BF'
+0000108D= 00                        35          DC.B    $00
+0000108E                            36          DS.B    3
+00001091= 42 4D 4F 56               37          DC.B    'BMOV'
+00001095= 00                        38          DC.B    $00
+00001096                            39          DS.B    1
+00001097= 42 54 53 54               40          DC.B    'BTST'
+0000109B= 00                        41          DC.B    $00
+0000109C                            42          DS.B    1
+0000109D= 42 53 43 48               43          DC.B    'BSCH'
+000010A1= 00                        44          DC.B    $00
+000010A2                            45          DS.B    1
+000010A3= 47 4F                     46          DC.B    'GO'
+000010A5= 00                        47          DC.B    $00
+000010A6                            48          DS.B    3
+000010A9= 44 46                     49          DC.B    'DF'
+000010AB= 00                        50          DC.B    $00
+000010AC                            51          DS.B    3
+000010AF= 45 58 49 54               52          DC.B    'EXIT'
+000010B3= 00                        53          DC.B    $00
+000010B4                            54          DS.B    1
+000010B5                            55  
+000010B5                            56  COMP_ADDR                       ;table of handlers
+000010B5= 62 65 65 70               57          DC.B    'beep'
+000010B9                            58  
+000010B9                            59  *-----------------------------------------------------------
+000010B9                            60  * Program segment
+000010B9                            61  *-----------------------------------------------------------        
+00003000                            62          ORG     $3000
+00003000                            63  *Start here: set up and call to main        
+00003000                            64  START                           ;set up here
+00003000  6100 0008                 65          BSR     MAIN            ;call main
+00003004                            66          
+00003004  103C 0009                 67          MOVE.B  #9,D0           ;exit program
+00003008  4E4F                      68          TRAP    #15
+0000300A                            69          
+0000300A                            70  * Main method
+0000300A  227C 00001000             71  MAIN    MOVEA.L #PROMPT,A1
+00003010  103C 000E                 72          MOVE.B  #14,D0
+00003014  4E4F                      73          TRAP    #15             ;print prompt
+00003016                            74          
+00003016  227C 0000101D             75          MOVEA.L #INPUT,A1
+0000301C  103C 0002                 76          MOVE.B  #2,D0
+00003020  4E4F                      77          TRAP    #15             ;read command
+00003022                            78  
+00003022  6100 0006                 79          BSR     PARSE
+00003026                            80          
+00003026  60E2                      81          BRA     MAIN            ;get next command
+00003028                            82          
+00003028  4E75                      83  EXITMAIN RTS
+0000302A                            84  
+0000302A                            85  *-----------------------------------------------------------
+0000302A                            86  * Parse commands
+0000302A                            87  *-----------------------------------------------------------
+0000302A  48E7 8070                 88  PARSE   MOVEM.L A1/A2/A3/D0,-(SP)     ;save registers
+0000302E  227C 0000101D             89          MOVEA.L #INPUT,A1       ;get front of string
+00003034                            90          
+00003034  247C 0000106D             91          MOVEA.L #COMP_TBL,A2    ;get item in command string table
+0000303A  267C 0000106D             92          MOVEA.L #COMP_TBL,A3
+00003040                            93          
+00003040  7004                      94          MOVE.L  #4,D0            ;set D0 to number of chars to check
+00003042                            95  
+00003042  B709                      96  PHELP   CMP.B   (A1)+,(A3)+
+00003044  56C8 FFFC                 97          DBNE    D0,PHELP        ;check next character
+00003048  6600 000A                 98          BNE     NHELP           ;if did not match, check next string
+0000304C  6100 012C                 99          BSR     HELP
+00003050  6000 0116                100          BRA     EXITPARSE
+00003054                           101  
+00003054  6100 0118                102  NHELP   BSR     NCHAR
+00003058  7004                     103          MOVE.L  #4,D0
+0000305A                           104  
+0000305A  B709                     105  PMDSP   CMP.B   (A1)+,(A3)+
+0000305C  56C8 FFFC                106          DBNE    D0,PMDSP        ;check next character
+00003060  6600 000A                107          BNE     NMDSP
+00003064  6100 0116                108          BSR     MDSP
+00003068  6000 00FE                109          BRA     EXITPARSE       ;if all chars matched, exit
+0000306C                           110  
+0000306C  6100 0100                111  NMDSP   BSR     NCHAR
+00003070  7005                     112          MOVE.L  #5,D0
+00003072                           113  
+00003072  B709                     114  PSORTW  CMP.B   (A1)+,(A3)+
+00003074  56C8 FFFC                115          DBNE    D0,PSORTW       ;check next character
+00003078  6600 000A                116          BNE     NSORTW
+0000307C  6100 0100                117          BSR     SORTW
+00003080  6000 00E6                118          BRA     EXITPARSE       ;if all chars matched, exit
+00003084                           119  
+00003084  6100 00E8                120  NSORTW  BSR     NCHAR
+00003088  7002                     121          MOVE.L  #2,D0
+0000308A                           122  
+0000308A  B709                     123  PMM     CMP.B   (A1)+,(A3)+
+0000308C  56C8 FFFC                124          DBNE    D0,PMM          ;check next character
+00003090  6600 000A                125          BNE     NMM
+00003094  6100 00EA                126          BSR     MM
+00003098  6000 00CE                127          BRA     EXITPARSE       ;if all chars matched, exit
+0000309C                           128  
+0000309C  6100 00D0                129  NMM     BSR     NCHAR
+000030A0  7002                     130          MOVE.L  #2,D0
+000030A2                           131  
+000030A2  B709                     132  PMS     CMP.B   (A1)+,(A3)+
+000030A4  56C8 FFFC                133          DBNE    D0,PMS          ;check next character
+000030A8  6600 000A                134          BNE     NMS
+000030AC  6100 00D4                135          BSR     MS
+000030B0  6000 00B6                136          BRA     EXITPARSE       ;if all chars matched, exit
+000030B4                           137  
+000030B4  6100 00B8                138  NMS     BSR     NCHAR
+000030B8  7002                     139          MOVE.L  #2,D0
+000030BA                           140  
+000030BA  B709                     141  PBF     CMP.B   (A1)+,(A3)+
+000030BC  56C8 FFFC                142          DBNE    D0,PBF          ;check next character
+000030C0  6600 000A                143          BNE     NBF
+000030C4  6100 00BE                144          BSR     BF
+000030C8  6000 009E                145          BRA     EXITPARSE       ;if all chars matched, exit
+000030CC                           146  
+000030CC  6100 00A0                147  NBF     BSR     NCHAR
+000030D0  7004                     148          MOVE.L  #4,D0
+000030D2                           149  
+000030D2  B709                     150  PBMOV   CMP.B   (A1)+,(A3)+
+000030D4  56C8 FFFC                151          DBNE    D0,PBMOV        ;check next character
+000030D8  6600 000A                152          BNE     NBMOV
+000030DC  6100 00A8                153          BSR     BMOV
+000030E0  6000 0086                154          BRA     EXITPARSE       ;if all chars matched, exit
+000030E4                           155  
+000030E4  6100 0088                156  NBMOV   BSR     NCHAR
+000030E8  7004                     157          MOVE.L  #4,D0
+000030EA                           158  
+000030EA  B709                     159  PBTST   CMP.B   (A1)+,(A3)+
+000030EC  56C8 FFFC                160          DBNE    D0,PBTST        ;check next character
+000030F0  6600 000A                161          BNE     NBTST
+000030F4  6100 0092                162          BSR     BTST
+000030F8  6000 006E                163          BRA     EXITPARSE       ;if all chars matched, exit
+000030FC                           164  
+000030FC  6100 0070                165  NBTST   BSR     NCHAR
+00003100  7004                     166          MOVE.L  #4,D0
+00003102                           167  
+00003102  B709                     168  PBSCH   CMP.B   (A1)+,(A3)+
+00003104  56C8 FFFC                169          DBNE    D0,PBSCH        ;check next character
+00003108  6600 000A                170          BNE     NBSCH
+0000310C  6100 007C                171          BSR     BSCH
+00003110  6000 0056                172          BRA     EXITPARSE       ;if all chars matched, exit
+00003114                           173  
+00003114  6100 0058                174  NBSCH   BSR     NCHAR
+00003118  7002                     175          MOVE.L  #2,D0
+0000311A                           176  
+0000311A  B709                     177  PGO     CMP.B   (A1)+,(A3)+
+0000311C  56C8 FFFC                178          DBNE    D0,PGO          ;check next character
+00003120  6600 000A                179          BNE     NGO
+00003124  6100 0066                180          BSR     GO
+00003128  6000 003E                181          BRA     EXITPARSE       ;if all chars matched, exit
+0000312C                           182  
+0000312C  6100 0040                183  NGO     BSR     NCHAR
+00003130  7002                     184          MOVE.L  #2,D0
+00003132                           185  
+00003132  B709                     186  PDF     CMP.B   (A1)+,(A3)+
+00003134  56C8 FFFC                187          DBNE    D0,PDF          ;check next character
+00003138  6600 000A                188          BNE     NDF
+0000313C  6100 0050                189          BSR     DF
+00003140  6000 0026                190          BRA     EXITPARSE       ;if all chars matched, exit
+00003144                           191  
+00003144  6100 0028                192  NDF     BSR     NCHAR
+00003148  7004                     193          MOVE.L  #4,D0
+0000314A                           194  
+0000314A  B709                     195  PEXIT   CMP.B   (A1)+,(A3)+
+0000314C  56C8 FFFC                196          DBNE    D0,PEXIT         ;check next character
+00003150  6600 000A                197          BNE     NEXIT
+00003154  6100 003A                198          BSR     EXIT
+00003158  6000 000E                199          BRA     EXITPARSE        ;if all chars matched, exit
+0000315C                           200  
+0000315C  227C 0000100D            201  NEXIT   MOVEA.L #INVALID,A1      ;if got here, failed
+00003162  103C 000D                202          MOVE.B  #13,D0
+00003166  4E4F                     203          TRAP    #15
+00003168                           204          
+00003168                           205  EXITPARSE
+00003168  4CDF 0E01                206          MOVEM.L (SP)+,A1/A2/A3/D0 ;restore registers
+0000316C  4E75                     207          RTS
+0000316E                           208  
+0000316E                           209  *-----------------------------------------------------------
+0000316E                           210  * Helper function for incrementing between checks
+0000316E                           211  *-----------------------------------------------------------
+0000316E  227C 0000101D            212  NCHAR   MOVEA.L #INPUT,A1       ;reset A1 to beginning of input string
+00003174  5C8A                     213          ADDA.L  #6,A2           ;increment to get next command string
+00003176  264A                     214          MOVEA.L A2,A3           ;update counter 
+00003178  4E75                     215          RTS
+0000317A                           216  
+0000317A                           217  *-----------------------------------------------------------
+0000317A                           218  * HELP
+0000317A                           219  *-----------------------------------------------------------
+0000317A  4E75                     220  HELP    RTS
+0000317C                           221  
+0000317C                           222  *-----------------------------------------------------------
+0000317C                           223  * MDSP
+0000317C                           224  *-----------------------------------------------------------
+0000317C  4E75                     225  MDSP    RTS
+0000317E                           226  
+0000317E                           227  *-----------------------------------------------------------
+0000317E                           228  * SORTW
+0000317E                           229  *-----------------------------------------------------------
+0000317E  4E75                     230  SORTW   RTS
+00003180                           231  
+00003180                           232  *-----------------------------------------------------------
+00003180                           233  * MM
+00003180                           234  *-----------------------------------------------------------
+00003180  4E75                     235  MM      RTS
+00003182                           236  
+00003182                           237  *-----------------------------------------------------------
+00003182                           238  * MS
+00003182                           239  *-----------------------------------------------------------
+00003182  4E75                     240  MS      RTS
+00003184                           241  
+00003184                           242  *-----------------------------------------------------------
+00003184                           243  * BF
+00003184                           244  *-----------------------------------------------------------
+00003184  4E75                     245  BF      RTS
+00003186                           246  
+00003186                           247  *-----------------------------------------------------------
+00003186                           248  * BMOV
+00003186                           249  *-----------------------------------------------------------
+00003186  4E75                     250  BMOV    RTS
+00003188                           251  
+00003188                           252  *-----------------------------------------------------------
+00003188                           253  * BTST
+00003188                           254  *-----------------------------------------------------------
+00003188  4E75                     255  BTST    RTS
+0000318A                           256  
+0000318A                           257  *-----------------------------------------------------------
+0000318A                           258  * BSCH
+0000318A                           259  *-----------------------------------------------------------
+0000318A  4E75                     260  BSCH    RTS
+0000318C                           261  
+0000318C                           262  *-----------------------------------------------------------
+0000318C                           263  * GO
+0000318C                           264  *-----------------------------------------------------------
+0000318C  4E75                     265  GO      RTS
+0000318E                           266  
+0000318E                           267  *-----------------------------------------------------------
+0000318E                           268  * DF
+0000318E                           269  *-----------------------------------------------------------
+0000318E  4E75                     270  DF      RTS
+00003190                           271  
+00003190                           272  *-----------------------------------------------------------
+00003190                           273  * EXIT
+00003190                           274  *-----------------------------------------------------------
+00003190  4E75                     275  EXIT    RTS
+00003192                           276  
+00003192                           277          END START
 
 No errors detected
 No warnings generated
@@ -40,7 +287,50 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-BUFFER              100D
-EXIT                301E
+BF                  3184
+BMOV                3186
+BSCH                318A
+BTST                3188
+COMP_ADDR           10B5
+COMP_TBL            106D
+DF                  318E
+EXIT                3190
+EXITMAIN            3028
+EXITPARSE           3168
+GO                  318C
+HELP                317A
+INPUT               101D
+INVALID             100D
+MAIN                300A
+MDSP                317C
+MM                  3180
+MS                  3182
+NBF                 30CC
+NBMOV               30E4
+NBSCH               3114
+NBTST               30FC
+NCHAR               316E
+NDF                 3144
+NEXIT               315C
+NGO                 312C
+NHELP               3054
+NMDSP               306C
+NMM                 309C
+NMS                 30B4
+NSORTW              3084
+PARSE               302A
+PBF                 30BA
+PBMOV               30D2
+PBSCH               3102
+PBTST               30EA
+PDF                 3132
+PEXIT               314A
+PGO                 311A
+PHELP               3042
+PMDSP               305A
+PMM                 308A
+PMS                 30A2
 PROMPT              1000
+PSORTW              3072
+SORTW               317E
 START               3000
