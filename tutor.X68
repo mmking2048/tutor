@@ -19,7 +19,7 @@ INPUT   DS.B    80              ;buffer for commands
 COMP_TBL                        ;table of all commands
         DC.B    'HELP'
         DC.B    $00
-        DS.B    1
+        DS.B    1               ;padding so table is aligned at 6 bytes
         DC.B    'MDSP'
         DC.B    $00
         DS.B    1
@@ -53,15 +53,12 @@ COMP_TBL                        ;table of all commands
         DC.B    $00
         DS.B    1
 
-COMP_ADDR                       ;table of handlers
-        DC.B    'beep'
-
 *-----------------------------------------------------------
 * Program segment
 *-----------------------------------------------------------        
         ORG     $3000
 *Start here: set up and call to main        
-START                           ;set up here
+START   BSR     SETUP           ;set up here
         BSR     MAIN            ;call main
         
         MOVE.B  #9,D0           ;exit program
@@ -81,6 +78,19 @@ MAIN    MOVEA.L #PROMPT,A1
         BRA     MAIN            ;get next command
         
 EXITMAIN RTS
+
+*-----------------------------------------------------------
+* Setup exception handler
+*-----------------------------------------------------------
+SETUP   MOVE.L  BUS,$008
+        MOVE.L  ADDR,$00C
+        MOVE.L  ILLI,$010
+        MOVE.L  DIV0,$014
+        MOVE.L  CHK,$018
+        MOVE.L  PRIV,$020
+        MOVE.L  LNEA,$028
+        MOVE.L  LNEF,$02C
+        RTS
 
 *-----------------------------------------------------------
 * Parse commands
@@ -274,7 +284,48 @@ DF      RTS
 *-----------------------------------------------------------
 EXIT    RTS
 
+*-----------------------------------------------------------
+* Bus error exception
+*-----------------------------------------------------------
+BUS     RTE
+
+*-----------------------------------------------------------
+* Address error exception
+*-----------------------------------------------------------
+ADDR    RTE
+
+*-----------------------------------------------------------
+* Illegal instruction exception
+*-----------------------------------------------------------
+ILLI    RTE
+
+*-----------------------------------------------------------
+* Privilege violation exception
+*-----------------------------------------------------------
+PRIV    RTE
+
+*-----------------------------------------------------------
+* Divide by zero exception
+*-----------------------------------------------------------
+DIV0    RTE
+
+*-----------------------------------------------------------
+* Check instruction exception
+*-----------------------------------------------------------
+CHK     RTE
+
+*-----------------------------------------------------------
+* Line A emulator exception
+*-----------------------------------------------------------
+LNEA    RTE
+
+*-----------------------------------------------------------
+* Line F emulator exception
+*-----------------------------------------------------------
+LNEF    RTE
+
         END START
+
 
 
 
