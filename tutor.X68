@@ -9,49 +9,49 @@
 *-----------------------------------------------------------
         ORG     $1000
         
-PROMPT  DC.B    'MONITOR441> '  ;prompt
-        DC.B    $00
-INVALID DC.B    'INVALID COMMAND'
-        DC.B    $00
+PROMPT  DC.B    'MONITOR441> ',0 ;prompt
+INVALID DC.B    'INVALID COMMAND',0
 
 INPUT   DS.B    80              ;buffer for commands
 
 COMP_TBL                        ;table of all commands
-        DC.B    'HELP'
-        DC.B    $00
+        DC.B    'HELP',0
         DS.B    1               ;padding so table is aligned at 6 bytes
-        DC.B    'MDSP'
-        DC.B    $00
+        DC.B    'MDSP',0
         DS.B    1
-        DC.B    'SORTW'
-        DC.B    $00
-        DC.B    'MM'
-        DC.B    $00
+        DC.B    'SORTW',0
+        DC.B    'MM',0
         DS.B    3
-        DC.B    'MS'
-        DC.B    $00
+        DC.B    'MS',0
         DS.B    3
-        DC.B    'BF'
-        DC.B    $00
+        DC.B    'BF',0
         DS.B    3
-        DC.B    'BMOV'
-        DC.B    $00
+        DC.B    'BMOV',0
         DS.B    1
-        DC.B    'BTST'
-        DC.B    $00
+        DC.B    'BTST',0
         DS.B    1
-        DC.B    'BSCH'
-        DC.B    $00
+        DC.B    'BSCH',0
         DS.B    1
-        DC.B    'GO'
-        DC.B    $00
+        DC.B    'GO',0
         DS.B    3
-        DC.B    'DF'
-        DC.B    $00
+        DC.B    'DF',0
         DS.B    3
-        DC.B    'EXIT'
-        DC.B    $00
+        DC.B    'EXIT',0
         DS.B    1
+
+HELP1   DC.B    'HELP: displays this help message',0
+HELP2   DC.B    'MDSP <address1> <address2>: outputs address and memory contents from <address1> to <address2>',0
+HELP2A  DC.B    'MDSP <address1>: outputs address and memory from <address1> to <address + 16 bytes',0
+HELP3   DC.B    'SORTW <address1> <address2> <order>: sort block of memory between <address1> and <address2>, in ascending (A) or descending (D) order',0
+HELP4   DC.B    'MM <address> <size>: display memory and modify/enter new data, showing byte (B), word (W), or longword (L) bytes',0
+HELP5   DC.B    'MS <address> <data>: set memory at <address> to <data>, which is of type ASCII or hex',0
+HELP6   DC.B    'BF <address1> <address2> <data>: fills memory between <address1> and <address2> with <data>, which is word size',0
+HELP7   DC.B    'BMOV <address1> <address2> <address3>: move block of memory between <address1> and <address2> to location starting at <address3>',0
+HELP8   DC.B    'BTST <address1> <address2>: test a block of memory between <address1> and <address2>',0
+HELP9   DC.B    'BSCH <address1> <address2> <string>: search for <string> between <address1> and <address2>',0
+HELP10  DC.B    'GO <address>: execute program at <address>',0
+HELP11  DC.B    'DF: display registers and values',0
+HELP12  DC.B    'EXIT: terminate the program',0
 
 *-----------------------------------------------------------
 * Program segment
@@ -227,7 +227,62 @@ NCHAR   MOVEA.L #INPUT,A1       ;reset A1 to beginning of input string
 *-----------------------------------------------------------
 * HELP
 *-----------------------------------------------------------
-HELP    RTS
+HELP    MOVEM.L D0/A1,-(SP)     ;save registers
+
+        MOVEA.L #HELP1,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP2,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP2A,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP3,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP4,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP5,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP6,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP7,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP8,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP9,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP10,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP11,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEA.L #HELP12,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVEM.L (SP)+,D0/A1     ;restore registers
+        RTS
 
 *-----------------------------------------------------------
 * MDSP
