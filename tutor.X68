@@ -101,9 +101,9 @@ PARSE   MOVEM.L A1/A2/A3/D0,-(SP)     ;save registers
         MOVEA.L #COMP_TBL,A2    ;get item in command string table
         MOVEA.L #COMP_TBL,A3
         
-        MOVE.L  #4,D0            ;set D0 to number of chars to check
+        MOVE.L  #4,D0           ;set D0 to number of chars to check
 
-PHELP   CMP.B   (A1)+,(A3)+
+PHELP   CMP.B   (A1)+,(A3)+     ;is command HELP?
         DBNE    D0,PHELP        ;check next character
         BNE     NHELP           ;if did not match, check next string
         BSR     HELP
@@ -112,7 +112,7 @@ PHELP   CMP.B   (A1)+,(A3)+
 NHELP   BSR     NCHAR
         MOVE.L  #4,D0
 
-PMDSP   CMP.B   (A1)+,(A3)+
+PMDSP   CMP.B   (A1)+,(A3)+     ;is command MDSP?
         DBNE    D0,PMDSP        ;check next character
         BNE     NMDSP
         BSR     MDSP
@@ -121,7 +121,7 @@ PMDSP   CMP.B   (A1)+,(A3)+
 NMDSP   BSR     NCHAR
         MOVE.L  #5,D0
 
-PSORTW  CMP.B   (A1)+,(A3)+
+PSORTW  CMP.B   (A1)+,(A3)+     ;is command SORTW?
         DBNE    D0,PSORTW       ;check next character
         BNE     NSORTW
         BSR     SORTW
@@ -130,7 +130,7 @@ PSORTW  CMP.B   (A1)+,(A3)+
 NSORTW  BSR     NCHAR
         MOVE.L  #2,D0
 
-PMM     CMP.B   (A1)+,(A3)+
+PMM     CMP.B   (A1)+,(A3)+     ;is command MM?
         DBNE    D0,PMM          ;check next character
         BNE     NMM
         BSR     MM
@@ -139,7 +139,7 @@ PMM     CMP.B   (A1)+,(A3)+
 NMM     BSR     NCHAR
         MOVE.L  #2,D0
 
-PMS     CMP.B   (A1)+,(A3)+
+PMS     CMP.B   (A1)+,(A3)+     ;is command MS?
         DBNE    D0,PMS          ;check next character
         BNE     NMS
         BSR     MS
@@ -148,7 +148,7 @@ PMS     CMP.B   (A1)+,(A3)+
 NMS     BSR     NCHAR
         MOVE.L  #2,D0
 
-PBF     CMP.B   (A1)+,(A3)+
+PBF     CMP.B   (A1)+,(A3)+     ;is command BF?
         DBNE    D0,PBF          ;check next character
         BNE     NBF
         BSR     BF
@@ -157,7 +157,7 @@ PBF     CMP.B   (A1)+,(A3)+
 NBF     BSR     NCHAR
         MOVE.L  #4,D0
 
-PBMOV   CMP.B   (A1)+,(A3)+
+PBMOV   CMP.B   (A1)+,(A3)+     ;is command MOV?
         DBNE    D0,PBMOV        ;check next character
         BNE     NBMOV
         BSR     BMOV
@@ -166,7 +166,7 @@ PBMOV   CMP.B   (A1)+,(A3)+
 NBMOV   BSR     NCHAR
         MOVE.L  #4,D0
 
-PBTST   CMP.B   (A1)+,(A3)+
+PBTST   CMP.B   (A1)+,(A3)+     ;is command BTST?
         DBNE    D0,PBTST        ;check next character
         BNE     NBTST
         BSR     BTST
@@ -175,7 +175,7 @@ PBTST   CMP.B   (A1)+,(A3)+
 NBTST   BSR     NCHAR
         MOVE.L  #4,D0
 
-PBSCH   CMP.B   (A1)+,(A3)+
+PBSCH   CMP.B   (A1)+,(A3)+     ;is command BSCH?
         DBNE    D0,PBSCH        ;check next character
         BNE     NBSCH
         BSR     BSCH
@@ -184,7 +184,7 @@ PBSCH   CMP.B   (A1)+,(A3)+
 NBSCH   BSR     NCHAR
         MOVE.L  #2,D0
 
-PGO     CMP.B   (A1)+,(A3)+
+PGO     CMP.B   (A1)+,(A3)+     ;is command GO?
         DBNE    D0,PGO          ;check next character
         BNE     NGO
         BSR     GO
@@ -193,7 +193,7 @@ PGO     CMP.B   (A1)+,(A3)+
 NGO     BSR     NCHAR
         MOVE.L  #2,D0
 
-PDF     CMP.B   (A1)+,(A3)+
+PDF     CMP.B   (A1)+,(A3)+     ;is command DF?
         DBNE    D0,PDF          ;check next character
         BNE     NDF
         BSR     DF
@@ -202,13 +202,13 @@ PDF     CMP.B   (A1)+,(A3)+
 NDF     BSR     NCHAR
         MOVE.L  #4,D0
 
-PEXIT   CMP.B   (A1)+,(A3)+
-        DBNE    D0,PEXIT         ;check next character
+PEXIT   CMP.B   (A1)+,(A3)+     ;is command EXIT?
+        DBNE    D0,PEXIT        ;check next character
         BNE     NEXIT
         BSR     EXIT
-        BRA     EXITPARSE        ;if all chars matched, exit
+        BRA     EXITPARSE       ;if all chars matched, exit
 
-NEXIT   MOVEA.L #INVALID,A1      ;if got here, failed
+NEXIT   MOVEA.L #INVALID,A1     ;if got here, failed
         MOVE.B  #13,D0
         TRAP    #15
         
@@ -287,7 +287,8 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
 *-----------------------------------------------------------
 * MDSP
 *-----------------------------------------------------------
-MDSP    RTS
+MDSP    
+        RTS
 
 *-----------------------------------------------------------
 * SORTW
@@ -326,8 +327,15 @@ BSCH    RTS
 
 *-----------------------------------------------------------
 * GO
+* Input: A1 contains address of first argument
 *-----------------------------------------------------------
-GO      RTS
+GO      MOVEM.L A1,-(SP)
+
+        BSR ASCII               ;read address
+        JMP D1                  ;execute
+
+        MOVEM.L (SP)+,A1
+        RTS
 
 *-----------------------------------------------------------
 * DF
@@ -379,7 +387,42 @@ LNEA    RTE
 *-----------------------------------------------------------
 LNEF    RTE
 
+*-----------------------------------------------------------
+* DIGIT: convert single ascii digit to hex
+* Input: single ascii character in register D0
+* Output: hex value in register D0
+*-----------------------------------------------------------
+DIGIT   CMP.B D0,#$40
+        BGT HIGHER
+        SUBI.B #$30,D0
+        BRA EXITASCII
+HIGHER  SUBI.B #$37,D0
+EXITASCII RTS
+
+*-----------------------------------------------------------
+* ASCII: convert ascii to hex
+* Input: pointer to start of string in A1
+* Output: hex value in register D1
+*-----------------------------------------------------------
+ASCII   MOVEM.L D0,-(SP)        ;save registers
+        CLR.B D1                ;clear for sum
+
+CHAR    MOVE.B (A1)+,D0         ;move digit
+        TST.B D0                ;continue until end of string
+        BEQ EXITASCII
+
+        BSR DIGIT
+
+        MULS.W #$10,D1          ;multiply by 10
+        ADD.B D0,D1             ;add digit (Horner)
+
+        BRA CHAR
+
+EXITASCII MOVEM.L (SP)+,D0      ;restore registers
+        RTS
+
         END START
+
 
 
 
