@@ -17,22 +17,22 @@ INPUT   DS.B    80              ;buffer for commands
 COMP_TBL                        ;table of all commands
         DC.B    'HELP',0
         DS.B    1               ;padding so table is aligned at 6 bytes
-        DC.B    'MDSP',0
+        DC.B    'MDSP ',0
         DS.B    1
-        DC.B    'SORTW',0
-        DC.B    'MM',0
+        DC.B    'SORTW ',0
+        DC.B    'MM ',0
         DS.B    3
-        DC.B    'MS',0
+        DC.B    'MS ',0
         DS.B    3
-        DC.B    'BF',0
+        DC.B    'BF ',0
         DS.B    3
-        DC.B    'BMOV',0
+        DC.B    'BMOV ',0
         DS.B    1
-        DC.B    'BTST',0
+        DC.B    'BTST ',0
         DS.B    1
-        DC.B    'BSCH',0
+        DC.B    'BSCH ',0
         DS.B    1
-        DC.B    'GO',0
+        DC.B    'GO ',0
         DS.B    3
         DC.B    'DF',0
         DS.B    3
@@ -109,7 +109,8 @@ PHELP   CMP.B   (A1)+,(A3)+     ;is command HELP?
         BSR     HELP
         BRA     EXITPARSE
 
-NHELP   BSR     NCHAR
+NHELP   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PMDSP   CMP.B   (A1)+,(A3)+     ;is command MDSP?
@@ -118,7 +119,8 @@ PMDSP   CMP.B   (A1)+,(A3)+     ;is command MDSP?
         BSR     MDSP
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NMDSP   BSR     NCHAR
+NMDSP   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #5,D0
 
 PSORTW  CMP.B   (A1)+,(A3)+     ;is command SORTW?
@@ -127,16 +129,19 @@ PSORTW  CMP.B   (A1)+,(A3)+     ;is command SORTW?
         BSR     SORTW
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NSORTW  BSR     NCHAR
+NSORTW  MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #2,D0
 
-PMM     CMP.B   (A1)+,(A3)+     ;is command MM?
+PMM     MOVEA.L #INPUT,A1
+        CMP.B   (A1)+,(A3)+     ;is command MM?
         DBNE    D0,PMM          ;check next character
         BNE     NMM
         BSR     MM
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NMM     BSR     NCHAR
+NMM     MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #2,D0
 
 PMS     CMP.B   (A1)+,(A3)+     ;is command MS?
@@ -145,7 +150,8 @@ PMS     CMP.B   (A1)+,(A3)+     ;is command MS?
         BSR     MS
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NMS     BSR     NCHAR
+NMS     MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #2,D0
 
 PBF     CMP.B   (A1)+,(A3)+     ;is command BF?
@@ -154,7 +160,8 @@ PBF     CMP.B   (A1)+,(A3)+     ;is command BF?
         BSR     BF
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NBF     BSR     NCHAR
+NBF     MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PBMOV   CMP.B   (A1)+,(A3)+     ;is command MOV?
@@ -163,7 +170,8 @@ PBMOV   CMP.B   (A1)+,(A3)+     ;is command MOV?
         BSR     BMOV
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NBMOV   BSR     NCHAR
+NBMOV   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PBTST   CMP.B   (A1)+,(A3)+     ;is command BTST?
@@ -172,7 +180,8 @@ PBTST   CMP.B   (A1)+,(A3)+     ;is command BTST?
         BSR     BTST
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NBTST   BSR     NCHAR
+NBTST   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PBSCH   CMP.B   (A1)+,(A3)+     ;is command BSCH?
@@ -181,7 +190,8 @@ PBSCH   CMP.B   (A1)+,(A3)+     ;is command BSCH?
         BSR     BSCH
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NBSCH   BSR     NCHAR
+NBSCH   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #2,D0
 
 PGO     CMP.B   (A1)+,(A3)+     ;is command GO?
@@ -190,7 +200,8 @@ PGO     CMP.B   (A1)+,(A3)+     ;is command GO?
         BSR     GO
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NGO     BSR     NCHAR
+NGO     MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #2,D0
 
 PDF     CMP.B   (A1)+,(A3)+     ;is command DF?
@@ -199,7 +210,8 @@ PDF     CMP.B   (A1)+,(A3)+     ;is command DF?
         BSR     DF
         BRA     EXITPARSE       ;if all chars matched, exit
 
-NDF     BSR     NCHAR
+NDF     MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PEXIT   CMP.B   (A1)+,(A3)+     ;is command EXIT?
@@ -287,7 +299,45 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
 *-----------------------------------------------------------
 * MDSP
 *-----------------------------------------------------------
-MDSP    
+MDSP    MOVEM.L D1/A2/A3,-(SP)
+
+        BSR ASCII               ;get first argument
+        MOVEA.L D1,A2
+        BSR ASCII               ;get second argument
+        MOVEA.L D1,A3
+
+        CMPA.L #0,A3            ;how many arguments?
+        BNE MEMLOOP
+        MOVEA.L A2,A3
+        ADDA.L #16,A3        ;if one argument, 16 bytes
+ 
+MEMLOOP CMPA.L A2,A3            ;continue while still in range
+        BLE MDSPEXIT
+
+        MOVE.L A2,D1            ;print address
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.L #$3A,D1          ;print colon
+        MOVE.B #6,D0
+        TRAP #15
+        
+        MOVE.L (A2)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.B #$D,D1           ;print cr
+        MOVE.B #6,D0
+        TRAP #15
+        MOVE.B #$A,D1           ;print lf
+        MOVE.B #6,D0
+        TRAP #15
+
+        BRA MEMLOOP
+
+MDSPEXIT MOVEM.L (SP)+,D1/A2/A3
         RTS
 
 *-----------------------------------------------------------
@@ -329,12 +379,7 @@ BSCH    RTS
 * GO
 * Input: A1 contains address of first argument
 *-----------------------------------------------------------
-GO      MOVEM.L A1,-(SP)
-
-        BSR ASCII               ;read address
-        JMP D1                  ;execute
-
-        MOVEM.L (SP)+,A1
+GO      
         RTS
 
 *-----------------------------------------------------------
@@ -392,12 +437,12 @@ LNEF    RTE
 * Input: single ascii character in register D0
 * Output: hex value in register D0
 *-----------------------------------------------------------
-DIGIT   CMP.B D0,#$40
+DIGIT   CMP.B #$40,D0
         BGT HIGHER
         SUBI.B #$30,D0
-        BRA EXITASCII
+        BRA EXITDIGIT
 HIGHER  SUBI.B #$37,D0
-EXITASCII RTS
+EXITDIGIT RTS
 
 *-----------------------------------------------------------
 * ASCII: convert ascii to hex
@@ -405,16 +450,19 @@ EXITASCII RTS
 * Output: hex value in register D1
 *-----------------------------------------------------------
 ASCII   MOVEM.L D0,-(SP)        ;save registers
-        CLR.B D1                ;clear for sum
+        CLR.L D0                ;clear for digit manipulation
+        CLR.L D1                ;clear for sum
 
 CHAR    MOVE.B (A1)+,D0         ;move digit
         TST.B D0                ;continue until end of string
+        BEQ EXITASCII
+        CMP.B #$20,D0           ;continue until empty space
         BEQ EXITASCII
 
         BSR DIGIT
 
         MULS.W #$10,D1          ;multiply by 10
-        ADD.B D0,D1             ;add digit (Horner)
+        ADD.L D0,D1             ;add digit (Horner)
 
         BRA CHAR
 
