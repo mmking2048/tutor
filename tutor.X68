@@ -16,7 +16,7 @@ INPUT   DS.B    80              ;buffer for commands
 
 COMP_TBL                        ;table of all commands
         DC.B    'HELP',0
-        DS.B    1               ;padding so table is aligned at 6 bytes
+        DS.B    2               ;padding so table is aligned at 6 bytes
         DC.B    'MDSP ',0
         DS.B    1
         DC.B    'SORTW ',0
@@ -35,9 +35,9 @@ COMP_TBL                        ;table of all commands
         DC.B    'GO ',0
         DS.B    3
         DC.B    'DF',0
-        DS.B    3
+        DS.B    4
         DC.B    'EXIT',0
-        DS.B    1
+        DS.B    2
 
 HELP1   DC.B    'HELP: displays this help message',0
 HELP2   DC.B    'MDSP <address1> <address2>: outputs address and memory contents from <address1> to <address2>',0
@@ -232,7 +232,7 @@ EXITPARSE
 * Helper function for incrementing between checks
 *-----------------------------------------------------------
 NCHAR   MOVEA.L #INPUT,A1       ;reset A1 to beginning of input string
-        ADDA.L  #6,A2           ;increment to get next command string
+        ADDA.L  #7,A2           ;increment to get next command string
         MOVEA.L A2,A3           ;update counter 
         RTS
 
@@ -309,7 +309,7 @@ MDSP    MOVEM.L D1/A2/A3,-(SP)
         CMPA.L #0,A3            ;how many arguments?
         BNE MEMLOOP
         MOVEA.L A2,A3
-        ADDA.L #16,A3        ;if one argument, 16 bytes
+        ADDA.L #16,A3           ;if one argument, 16 bytes
  
 MEMLOOP CMPA.L A2,A3            ;continue while still in range
         BLE MDSPEXIT
@@ -343,7 +343,35 @@ MDSPEXIT MOVEM.L (SP)+,D1/A2/A3
 *-----------------------------------------------------------
 * SORTW
 *-----------------------------------------------------------
-SORTW   RTS
+SORTW   MOVEM.L D0/D1/D2/A2/A3/A4,-(SP)
+
+        BSR ASCII               ;get first argument
+        MOVEA.L D1,A2
+        BSR ASCII               ;get second argument
+        MOVEA.L D1,A3
+        MOVE.B (A1)+,D2         ;get third argument
+
+        MOVEA.L A2,A4
+SORTLOOP MOVEA.L A4,A2
+BUBBLE  CMP.B #$41,D2           ;is it "A"?
+        BGT DSC
+ASC     CMP.W (A2)+,(A2)+
+        BLS CMPNXT              ;sort ascending
+        BRA SWAP
+DSC     CMP.W (A2)+,(A2)+
+        BHI CMPNXT              ;sort descending
+
+SWAP    MOVE.L -(A2),D0
+        SWAP.W D0
+        MOVE.L D0,(A2)
+        BRA SORTLOOP
+
+CMPNXT  SUBA.L #2,A2
+        CMP.L A2,A3
+        BGT BUBBLE
+
+        MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
+        RTS
 
 *-----------------------------------------------------------
 * MM
@@ -470,6 +498,7 @@ EXITASCII MOVEM.L (SP)+,D0      ;restore registers
         RTS
 
         END START
+
 
 
 
