@@ -356,56 +356,56 @@ NCHAR   MOVEA.L #INPUT,A1       ;reset A1 to beginning of input string
 HELP    MOVEM.L D0/A1,-(SP)     ;save registers
 
         MOVEA.L #HELP1,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP2,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP2A,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP3,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP4,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP5,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP6,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP7,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP8,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP9,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP10,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP11,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEA.L #HELP12,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         MOVEM.L (SP)+,D0/A1     ;restore registers
         RTS
@@ -415,36 +415,36 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
 *-----------------------------------------------------------
 MDSP    MOVEM.L D0/D1/A2/A3,-(SP)
 
-        BSR ASCII               ;get first argument
+        BSR     ASCII           ;get first argument
         MOVEA.L D1,A2
-        BSR ASCII               ;get second argument
+        BSR     ASCII           ;get second argument
         MOVEA.L D1,A3
 
-        CMPA.L #0,A3            ;how many arguments?
-        BNE MEMLOOP
+        CMPA.L  #0,A3           ;how many arguments?
+        BNE     MEMLOOP
         MOVEA.L A2,A3
-        ADDA.L #16,A3           ;if one argument, 16 bytes
+        ADDA.L  #16,A3          ;if one argument, 16 bytes
  
-MEMLOOP CMPA.L A2,A3            ;continue while still in range
-        BLE MDSPEXIT
+MEMLOOP CMPA.L  A2,A3           ;continue while still in range
+        BLE     MDSPEXIT
 
-        MOVE.L A2,D1            ;print address
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        MOVE.L  A2,D1           ;print address
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        MOVE.L #$3A,D1          ;print colon
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$3A,D1         ;print colon
+        MOVE.B  #6,D0
+        TRAP    #15
         
-        MOVE.L (A2)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        MOVE.L  (A2)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        BSR CRLF
+        BSR     CRLF
 
-        BRA MEMLOOP
+        BRA     MEMLOOP
 
 MDSPEXIT MOVEM.L (SP)+,D0/D1/A2/A3
         RTS
@@ -454,30 +454,30 @@ MDSPEXIT MOVEM.L (SP)+,D0/D1/A2/A3
 *-----------------------------------------------------------
 SORTW   MOVEM.L D0/D1/D2/A2/A3/A4,-(SP)
 
-        BSR ASCII               ;get first argument
+        BSR     ASCII           ;get first argument
         MOVEA.L D1,A2
-        BSR ASCII               ;get second argument
+        BSR     ASCII           ;get second argument
         MOVEA.L D1,A3
-        MOVE.B (A1)+,D2         ;get third argument
+        MOVE.B  (A1)+,D2        ;get third argument
 
         MOVEA.L A2,A4
 SORTLOOP MOVEA.L A4,A2
-BUBBLE  CMP.B #$41,D2           ;is it "A"?
-        BGT DSC
-ASC     CMP.W (A2)+,(A2)+
-        BLS CMPNXT              ;sort ascending
-        BRA SWAP
-DSC     CMP.W (A2)+,(A2)+
-        BHI CMPNXT              ;sort descending
+BUBBLE  CMP.B   #$41,D2         ;is it "A"?
+        BGT     DSC
+ASC     CMP.W   (A2)+,(A2)+
+        BLS     CMPNXT          ;sort ascending
+        BRA     SWAP
+DSC     CMP.W   (A2)+,(A2)+
+        BHI     CMPNXT          ;sort descending
 
-SWAP    MOVE.L -(A2),D0
-        SWAP.W D0
-        MOVE.L D0,(A2)
-        BRA SORTLOOP
+SWAP    MOVE.L  -(A2),D0
+        SWAP.W  D0
+        MOVE.L  D0,(A2)
+        BRA     SORTLOOP
 
-CMPNXT  SUBA.L #2,A2
-        CMP.L A2,A3
-        BGT BUBBLE
+CMPNXT  SUBA.L  #2,A2
+        CMP.L   A2,A3
+        BGT     BUBBLE
 
         MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
         RTS
@@ -487,68 +487,68 @@ CMPNXT  SUBA.L #2,A2
 *-----------------------------------------------------------
 MM      MOVEM.L D0/D1/D2/D3/A2,-(SP)
 
-        BSR ASCII               ;get address argument
+        BSR     ASCII           ;get address argument
         MOVEA.L D1,A2
-        MOVE.B (A1)+,D3
+        MOVE.B  (A1)+,D3
 
-MMNXT   MOVE.L A2,D1            ;print address
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+MMNXT   MOVE.L  A2,D1           ;print address
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        MOVE.L #$3A,D1          ;print colon
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$3A,D1         ;print colon
+        MOVE.B  #6,D0
+        TRAP    #15
         
-        CLR.L D1
-        CMP.B #$42,D3           ;is it a byte?
-        BNE MMWORD
-        MOVE.B (A2)+,D1
-        BRA MMTRAP
+        CLR.L   D1
+        CMP.B   #$42,D3         ;is it a byte?
+        BNE     MMWORD
+        MOVE.B  (A2)+,D1
+        BRA     MMTRAP
 
-MMWORD  CMP.B #$57,D3           ;is it a word?
-        BNE MMLONG
-        MOVE.W (A2)+,D1
-        BRA MMTRAP
+MMWORD  CMP.B   #$57,D3         ;is it a word?
+        BNE     MMLONG
+        MOVE.W  (A2)+,D1
+        BRA     MMTRAP
 
-MMLONG  MOVE.L (A2)+,D1         ;it must be a long
+MMLONG  MOVE.L  (A2)+,D1        ;it must be a long
 
-MMTRAP  MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+MMTRAP  MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        MOVE.L #$3F,D1          ;print ?
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$3F,D1         ;print ?
+        MOVE.B  #6,D0
+        TRAP    #15
 
         MOVEA.L #INPUT,A1
         MOVE.B  #2,D0
         TRAP    #15             ;read value
 
-        CMP.B #$2E,(A1)         ;quit on . entered
-        BEQ EXMM
+        CMP.B   #$2E,(A1)       ;quit on . entered
+        BEQ     EXMM
 
-        TST.B D1
-        BEQ MMNXT
+        TST.B   D1
+        BEQ     MMNXT
         
-        BSR ASCII               ;convert value to hex
+        BSR     ASCII           ;convert value to hex
 
-        CMP.B #$42,D3           ;is it a byte?
-        BNE MMWORD2
-        MOVE.B D1,-(A2)
-        ADDA.L #1,A2
-        BRA MMNXT
+        CMP.B   #$42,D3         ;is it a byte?
+        BNE     MMWORD2
+        MOVE.B  D1,-(A2)
+        ADDA.L  #1,A2
+        BRA     MMNXT
 
-MMWORD2 CMP.B #$57,D3           ;is it a word?
-        BNE MMLONG2
-        MOVE.W D1,-(A2)
-        ADDA.L #2,A2
-        BRA MMNXT
+MMWORD2 CMP.B   #$57,D3         ;is it a word?
+        BNE     MMLONG2
+        MOVE.W  D1,-(A2)
+        ADDA.L  #2,A2
+        BRA     MMNXT
 
-MMLONG2 MOVE.L D1,-(A2)         ;it must be a long
-        ADDA.L #4,A2
+MMLONG2 MOVE.L  D1,-(A2)        ;it must be a long
+        ADDA.L  #4,A2
         
-        BRA MMNXT
+        BRA     MMNXT
 
 EXMM    MOVEM.L (SP)+,D0/D1/D2/D3/A2
         RTS
@@ -558,11 +558,11 @@ EXMM    MOVEM.L (SP)+,D0/D1/D2/D3/A2
 *-----------------------------------------------------------
 MS      MOVEM.L D1/A2,-(SP)
 
-        BSR ASCII               ;read address argument
+        BSR     ASCII           ;read address argument
         MOVEA.L D1,A2
-        BSR ASCII               ;read data argument
+        BSR     ASCII           ;read data argument
 
-        MOVE.W D1,(A2)          ;write data to memory
+        MOVE.W  D1,(A2)         ;write data to memory
 
         MOVEM.L (SP)+,D1/A2
         RTS
@@ -572,16 +572,16 @@ MS      MOVEM.L D1/A2,-(SP)
 *-----------------------------------------------------------
 BF      MOVEM.L D1/A2/A3,-(SP)
 
-        BSR ASCII               ;read start address
+        BSR     ASCII           ;read start address
         MOVEA.L D1,A2
-        BSR ASCII               ;read end address
+        BSR     ASCII           ;read end address
         MOVEA.L D1,A3
-        BSR ASCII               ;read data
+        BSR     ASCII           ;read data
 
-BFLOOP  CMP.L A2,A3
-        BLT EXBF
-        MOVE.W D1,(A2)+         ;write to memory
-        BRA BFLOOP
+BFLOOP  CMP.L   A2,A3
+        BLT     EXBF
+        MOVE.W  D1,(A2)+        ;write to memory
+        BRA     BFLOOP
 
 EXBF    MOVEM.L (SP)+,D1/A2/A3
         RTS
@@ -591,17 +591,17 @@ EXBF    MOVEM.L (SP)+,D1/A2/A3
 *-----------------------------------------------------------
 BMOV    MOVEM.L D1/A2/A3/A4,-(SP)
 
-        BSR ASCII               ;read original start address
+        BSR     ASCII           ;read original start address
         MOVEA.L D1,A2
-        BSR ASCII               ;read origina end address
+        BSR     ASCII           ;read origina end address
         MOVEA.L D1,A3
-        BSR ASCII               ;read new start address
+        BSR     ASCII           ;read new start address
         MOVEA.L D1,A4
 
-BMOVLOOP CMP.L A2,A3
-        BLT EXBMOV
-        MOVE.W (A2)+,(A4)+      ;copy memory to new loc
-        BRA BMOVLOOP
+BMOVLOOP CMP.L  A2,A3
+        BLT     EXBMOV
+        MOVE.W  (A2)+,(A4)+     ;copy memory to new loc
+        BRA     BMOVLOOP
 
 EXBMOV  MOVEM.L (SP)+,D1/A2/A3/A4
         RTS
@@ -611,68 +611,68 @@ EXBMOV  MOVEM.L (SP)+,D1/A2/A3/A4
 *-----------------------------------------------------------
 BTST    MOVEM.L D0/D1/D2/A2/A3/A4,-(SP)
 
-        BSR ASCII               ;get start address
+        BSR     ASCII           ;get start address
         MOVEA.L D1,A2
         MOVEA.L D1,A4
-        BSR ASCII               ;get end address
+        BSR     ASCII           ;get end address
         MOVEA.L D1,A3
 
 BTSTLOOP1 CMP.L A2,A3
-        BLT ENDLOOP1
-        MOVE.B #$55,(A2)+       ;fill memory
-        BRA BTSTLOOP1
+        BLT     ENDLOOP1
+        MOVE.B  #$55,(A2)+      ;fill memory
+        BRA     BTSTLOOP1
 ENDLOOP1 MOVEA.L A4,A2
-        MOVE.B #$55,D2
+        MOVE.B  #$55,D2
 
 BTSTLOOP2 CMP.L A2,A3
-        BLT ENDLOOP2
-        CMP.B #$55,(A2)         ;check read value
-        BNE BAD
-        MOVE.B #$AA,(A2)+       ;fill memory
-        BRA BTSTLOOP2
+        BLT     ENDLOOP2
+        CMP.B   #$55,(A2)       ;check read value
+        BNE     BAD
+        MOVE.B  #$AA,(A2)+      ;fill memory
+        BRA     BTSTLOOP2
 ENDLOOP2 MOVEA.L A4,A2
-        MOVE.B #$AA,D2
+        MOVE.B  #$AA,D2
 
 BTSTLOOP3 CMP.L A2,A3
-        BLT GOOD
-        CMP.B #$AA,(A2)+        ;check read value
-        BNE BAD
-        BRA BTSTLOOP3
+        BLT     GOOD
+        CMP.B   #$AA,(A2)+      ;check read value
+        BNE     BAD
+        BRA     BTSTLOOP3
 
-BAD     SUBA.L #1,A2            ;go back to broken address
+BAD     SUBA.L  #1,A2           ;go back to broken address
 
         MOVEA.L #FAILURE,A1     ;print failure message
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
-        MOVE.L A2,D1            ;print address
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        MOVE.L  A2,D1           ;print address
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        MOVE.L #$3A,D1          ;print colon
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$3A,D1         ;print colon
+        MOVE.B  #6,D0
+        TRAP    #15
 
-        MOVE.L D2,D1            ;print data stored
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        MOVE.L  D2,D1           ;print data stored
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
         
-        MOVE.L #$2C,D1          ;print comma
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$2C,D1         ;print comma
+        MOVE.B  #6,D0
+        TRAP    #15
 
-        MOVE.L (A2),D1          ;print data read
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        MOVE.L  (A2),D1         ;print data read
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        BRA EXBTST
+        BRA     EXBTST
 
 GOOD    MOVEA.L #SUCCESS,A1     ;print success message
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
 EXBTST  MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
         RTS
@@ -682,49 +682,49 @@ EXBTST  MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
 *-----------------------------------------------------------
 BSCH    MOVEM.L D0/D1/D2/A1/A2/A3/A4/A5,-(SP)
 
-        BSR ASCII               ;get start address
+        BSR     ASCII           ;get start address
         MOVEA.L D1,A2
         MOVEA.L A2,A5
-        BSR ASCII               ;get end address
+        BSR     ASCII           ;get end address
         MOVEA.L D1,A3
         MOVEA.L A1,A4           ;save start of search string
 
-        CLR.L D0
-LENSCH  CMP.B #$00,(A1)+        ;get length of search string
-        BEQ SAVELEN     
-        ADDI.L #1,D0
-        BRA LENSCH
+        CLR.L   D0
+LENSCH  CMP.B   #$00,(A1)+      ;get length of search string
+        BEQ     SAVELEN     
+        ADDI.L  #1,D0
+        BRA     LENSCH
 
-SAVELEN MOVE.L D0,D3
+SAVELEN MOVE.L  D0,D3
 
 SCHLOOP MOVEA.L A4,A1           ;restore to start of search
         MOVEA.L A5,A2           ;check with next char
-        MOVE.L D3,D0            ;restore search length
-        CMP.L A2,A3
-        BLT ENDSCH
+        MOVE.L  D3,D0           ;restore search length
+        CMP.L   A2,A3
+        BLT     ENDSCH
 
-        ADDA.L #1,A5            ;next starting point
+        ADDA.L  #1,A5           ;next starting point
 
 SCHFIND CMP.B   (A1)+,(A2)+     ;does string match?
         DBNE    D0,SCHFIND      ;check next character
         BNE     SCHLOOP
 
-        SUBA.L #1,A5            ;go back to starting address
-        MOVE.L A5,D1            ;print address
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
+        SUBA.L  #1,A5           ;go back to starting address
+        MOVE.L  A5,D1           ;print address
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
 
-        MOVE.L #$3A,D1          ;print colon
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$3A,D1         ;print colon
+        MOVE.B  #6,D0
+        TRAP    #15
 
-        MOVE.L A5,A1            ;print data
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.L  A5,A1           ;print data
+        MOVE.B  #13,D0
+        TRAP    #15
 
-        ADDA.L #1,A5            ;restore to next starting address
-        BRA SCHLOOP
+        ADDA.L  #1,A5           ;restore to next starting address
+        BRA     SCHLOOP
 
 ENDSCH  MOVEM.L (SP)+,D0/D1/D2/A1/A2/A3/A4/A5
         RTS
@@ -734,9 +734,9 @@ ENDSCH  MOVEM.L (SP)+,D0/D1/D2/A1/A2/A3/A4/A5
 *-----------------------------------------------------------
 GO      MOVEM.L D1/A1,-(SP)
 
-        BSR ASCII               ;get address
+        BSR     ASCII           ;get address
         MOVEA.L D1,A1           ;use arbitrary address
-        JSR 0(A1)
+        JSR     0(A1)
 
         MOVEM.L (SP)+,D1/A1
         RTS
@@ -749,185 +749,185 @@ DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
         MOVEA.L #REGVAL,A0
 
         MOVEA.L #REGPC,A1
-        MOVE.B #14,D0           ;print PC
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print PC
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGSR,A1
-        MOVE.B #14,D0           ;print SR
-        TRAP #15
-        MOVE.W (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print SR
+        TRAP    #15
+        MOVE.W  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGUS,A1
-        MOVE.B #14,D0           ;print US
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print US
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGSS,A1
-        MOVE.B #14,D0           ;print SS
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print SS
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD0,A1
-        MOVE.B #14,D0           ;print D0
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D0
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD1,A1
-        MOVE.B #14,D0           ;print D1
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D1
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD2,A1
-        MOVE.B #14,D0           ;print D2
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D2
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD3,A1
-        ADDA.L #4,A1
-        MOVE.B #14,D0           ;print D3
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        ADDA.L  #4,A1
+        MOVE.B  #14,D0          ;print D3
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
         
         MOVEA.L #REGD4,A1
-        MOVE.B #14,D0           ;print D4
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D4
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD5,A1
-        MOVE.B #14,D0           ;print D5
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D5
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD6,A1
-        MOVE.B #14,D0           ;print D6
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D6
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGD7,A1
-        MOVE.B #14,D0           ;print D7
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print D7
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA0,A1
-        MOVE.B #14,D0           ;print A0
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A0
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA1,A1
-        MOVE.B #14,D0           ;print A1
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A1
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA2,A1
-        MOVE.B #14,D0           ;print A2
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A2
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA3,A1
-        MOVE.B #14,D0           ;print A3
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A3
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA4,A1
-        MOVE.B #14,D0           ;print A4
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A4
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA5,A1
-        MOVE.B #14,D0           ;print A5
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A5
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA6,A1
-        MOVE.B #14,D0           ;print A6
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A6
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEA.L #REGA7,A1
-        MOVE.B #14,D0           ;print A7
-        TRAP #15
-        MOVE.L (A0)+,D1         ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR CRLF
+        MOVE.B  #14,D0          ;print A7
+        TRAP    #15
+        MOVE.L  (A0)+,D1        ;print value
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+        BSR     CRLF
 
         MOVEM.L (SP)+,D0/D1/D2/A0/A1
         RTS
@@ -936,64 +936,64 @@ DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
 * Bus error exception
 *-----------------------------------------------------------
 BUS     MOVEA.L #BUS_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Address error exception
 *-----------------------------------------------------------
 ADDR    MOVEA.L #ADDR_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Illegal instruction exception
 *-----------------------------------------------------------
 ILLI    MOVEA.L #ILLI_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Privilege violation exception
 *-----------------------------------------------------------
 PRIV    MOVEA.L #PRIV_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Divide by zero exception
 *-----------------------------------------------------------
 DIV0    MOVEA.L #DIV0_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Check instruction exception
 *-----------------------------------------------------------
 CHK     MOVEA.L #CHK_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Line A emulator exception
 *-----------------------------------------------------------
 LNEA    MOVEA.L #LNEA_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
 * Line F emulator exception
 *-----------------------------------------------------------
 LNEF    MOVEA.L #LNEF_MSG,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
         RTE
 
 *-----------------------------------------------------------
@@ -1005,11 +1005,11 @@ LNEF    MOVEA.L #LNEF_MSG,A1
 * Input: single ascii character in register D0
 * Output: hex value in register D0
 *-----------------------------------------------------------
-DIGIT   CMP.B #$40,D0
-        BGT HIGHER
-        SUBI.B #$30,D0
-        BRA EXITDIGIT
-HIGHER  SUBI.B #$37,D0
+DIGIT   CMP.B   #$40,D0
+        BGT     HIGHER
+        SUBI.B  #$30,D0
+        BRA     EXITDIGIT
+HIGHER  SUBI.B  #$37,D0
 EXITDIGIT RTS
 
 *-----------------------------------------------------------
@@ -1018,21 +1018,21 @@ EXITDIGIT RTS
 * Output: hex value in register D1
 *-----------------------------------------------------------
 ASCII   MOVEM.L D0,-(SP)        ;save registers
-        CLR.L D0                ;clear for digit manipulation
-        CLR.L D1                ;clear for sum
+        CLR.L   D0              ;clear for digit manipulation
+        CLR.L   D1              ;clear for sum
 
-CHAR    MOVE.B (A1)+,D0         ;move digit
-        TST.B D0                ;continue until end of string
-        BEQ EXITASCII
-        CMP.B #$20,D0           ;continue until empty space
-        BEQ EXITASCII
+CHAR    MOVE.B  (A1)+,D0        ;move digit
+        TST.B   D0              ;continue until end of string
+        BEQ     EXITASCII
+        CMP.B   #$20,D0         ;continue until empty space
+        BEQ     EXITASCII
 
-        BSR DIGIT
+        BSR     DIGIT
 
-        MULS.W #$10,D1          ;multiply by 10
-        ADD.L D0,D1             ;add digit (Horner)
+        MULS.W  #$10,D1         ;multiply by 10
+        ADD.L   D0,D1           ;add digit (Horner)
 
-        BRA CHAR
+        BRA     CHAR
 
 EXITASCII MOVEM.L (SP)+,D0      ;restore registers
         RTS
@@ -1042,9 +1042,9 @@ EXITASCII MOVEM.L (SP)+,D0      ;restore registers
 *-----------------------------------------------------------
 SPACE   MOVEM.L D0/D1,-(SP)
 
-        MOVE.L #$20,D1          ;print space
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.L  #$20,D1         ;print space
+        MOVE.B  #6,D0
+        TRAP    #15
 
         MOVEM.L (SP)+,D0/D1
         RTS
@@ -1054,39 +1054,39 @@ SPACE   MOVEM.L D0/D1,-(SP)
 *-----------------------------------------------------------
 CRLF    MOVEM.L D0/D1,-(SP)
 
-        MOVE.B #$D,D1           ;print cr
-        MOVE.B #6,D0
-        TRAP #15
-        MOVE.B #$A,D1           ;print lf
-        MOVE.B #6,D0
-        TRAP #15
+        MOVE.B  #$D,D1          ;print cr
+        MOVE.B  #6,D0
+        TRAP    #15
+        MOVE.B  #$A,D1          ;print lf
+        MOVE.B  #6,D0
+        TRAP    #15
 
         MOVEM.L (SP)+,D0/D1
         RTS
 
-        ORG $50
-TEST    DC.B 'Hello World!',0
+        ORG     $50
+TEST    DC.B    'Hello World!',0
 
-        ORG $100
+        ORG     $100
         MOVEA.L #TEST,A1
-        MOVE.B #13,D0
-        TRAP #15
+        MOVE.B  #13,D0
+        TRAP    #15
 
         RTS
 
-        ORG $200
+        ORG     $200
 ADDRLOOP MOVE.W D0,A1
-        MOVE.W D1,(A1)+
-        BRA ADDRLOOP
+        MOVE.W  D1,(A1)+
+        BRA     ADDRLOOP
 
         RTS
 
-        ORG $300
-        CLR D0
-        DIVS D0,D0
+        ORG     $300
+        CLR     D0
+        DIVS    D0,D0
         RTS
 
-        END START
+        END     START
 
 
 
