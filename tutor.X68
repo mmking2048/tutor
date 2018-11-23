@@ -479,7 +479,22 @@ EXBF    MOVEM.L (SP)+,D1/A2/A3
 *-----------------------------------------------------------
 * BMOV
 *-----------------------------------------------------------
-BMOV    RTS
+BMOV    MOVEM.L D1/A2/A3/A4,-(SP)
+
+        BSR ASCII               ;read original start address
+        MOVEA.L D1,A2
+        BSR ASCII               ;read origina end address
+        MOVEA.L D1,A3
+        BSR ASCII               ;read new start address
+        MOVEA.L D1,A4
+
+BMOVLOOP CMP.L A2,A3
+        BLT EXBMOV
+        MOVE.W (A2)+,(A4)+      ;copy memory to new loc
+        BRA BMOVLOOP
+
+EXBMOV  MOVEM.L (SP)+,D1/A2/A3/A4
+        RTS
 
 *-----------------------------------------------------------
 * BTST
