@@ -133,8 +133,7 @@ NSORTW  MOVEA.L #INPUT,A1
         BSR     NCHAR
         MOVE.L  #2,D0
 
-PMM     MOVEA.L #INPUT,A1
-        CMP.B   (A1)+,(A3)+     ;is command MM?
+PMM     CMP.B   (A1)+,(A3)+     ;is command MM?
         DBNE    D0,PMM          ;check next character
         BNE     NMM
         BSR     MM
@@ -299,7 +298,7 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
 *-----------------------------------------------------------
 * MDSP
 *-----------------------------------------------------------
-MDSP    MOVEM.L D1/A2/A3,-(SP)
+MDSP    MOVEM.L D0/D1/A2/A3,-(SP)
 
         BSR ASCII               ;get first argument
         MOVEA.L D1,A2
@@ -337,7 +336,7 @@ MEMLOOP CMPA.L A2,A3            ;continue while still in range
 
         BRA MEMLOOP
 
-MDSPEXIT MOVEM.L (SP)+,D1/A2/A3
+MDSPEXIT MOVEM.L (SP)+,D0/D1/A2/A3
         RTS
 
 *-----------------------------------------------------------
@@ -376,7 +375,73 @@ CMPNXT  SUBA.L #2,A2
 *-----------------------------------------------------------
 * MM
 *-----------------------------------------------------------
-MM      RTS
+MM      MOVEM.L D0/D1/D2/D3/A2,-(SP)
+
+        BSR ASCII               ;get address argument
+        MOVEA.L D1,A2
+        MOVE.B (A1)+,D3
+
+MMNXT   MOVE.L A2,D1            ;print address
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.L #$3A,D1          ;print colon
+        MOVE.B #6,D0
+        TRAP #15
+        
+        CLR.L D1
+        CMP.B #$42,D3           ;is it a byte?
+        BNE MMWORD
+        MOVE.B (A2)+,D1
+        BRA MMTRAP
+
+MMWORD  CMP.B #$57,D3           ;is it a word?
+        BNE MMLONG
+        MOVE.W (A2)+,D1
+        BRA MMTRAP
+
+MMLONG  MOVE.L (A2)+,D1         ;it must be a long
+
+MMTRAP  MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.L #$3F,D1          ;print ?
+        MOVE.B #6,D0
+        TRAP #15
+
+        MOVEA.L #INPUT,A1
+        MOVE.B  #2,D0
+        TRAP    #15             ;read value
+
+        CMP.B #$2E,(A1)         ;quit on . entered
+        BEQ EXMM
+
+        TST.B D1
+        BEQ MMNXT
+        
+        BSR ASCII               ;convert value to hex
+
+        CMP.B #$42,D3           ;is it a byte?
+        BNE MMWORD2
+        MOVE.B D1,-(A2)
+        ADDA.L #1,A2
+        BRA MMNXT
+
+MMWORD2 CMP.B #$57,D3           ;is it a word?
+        BNE MMLONG2
+        MOVE.W D1,-(A2)
+        ADDA.L #2,A2
+        BRA MMNXT
+
+MMLONG2 MOVE.L D1,-(A2)         ;it must be a long
+        ADDA.L #4,A2
+        
+        BRA MMNXT
+
+EXMM    MOVEM.L (SP)+,D0/D1/D2/D3/A2
+        RTS
 
 *-----------------------------------------------------------
 * MS
@@ -405,7 +470,6 @@ BSCH    RTS
 
 *-----------------------------------------------------------
 * GO
-* Input: A1 contains address of first argument
 *-----------------------------------------------------------
 GO      
         RTS
