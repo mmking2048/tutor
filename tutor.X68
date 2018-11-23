@@ -53,6 +53,9 @@ HELP10  DC.B    'GO <address>: execute program at <address>',0
 HELP11  DC.B    'DF: display registers and values',0
 HELP12  DC.B    'EXIT: terminate the program',0
 
+SUCCESS DC.B    'BTST successful',0
+FAILURE DC.B    'BTST failed',0
+
 *-----------------------------------------------------------
 * Program segment
 *-----------------------------------------------------------        
@@ -499,7 +502,73 @@ EXBMOV  MOVEM.L (SP)+,D1/A2/A3/A4
 *-----------------------------------------------------------
 * BTST
 *-----------------------------------------------------------
-BTST    RTS
+BTST    MOVEM.L D0/D1/D2/A2/A3/A4,-(SP)
+
+        BSR ASCII               ;get start address
+        MOVEA.L D1,A2
+        MOVEA.L D1,A4
+        BSR ASCII               ;get end address
+        MOVEA.L D1,A3
+
+BTSTLOOP1 CMP.L A2,A3
+        BLT ENDLOOP1
+        MOVE.B #$55,(A2)+       ;fill memory
+        BRA BTSTLOOP1
+ENDLOOP1 MOVEA.L A4,A2
+        MOVE.B #$55,D2
+
+BTSTLOOP2 CMP.L A2,A3
+        BLT ENDLOOP2
+        CMP.B #$55,(A2)         ;check read value
+        BNE BAD
+        MOVE.B #$AA,(A2)+       ;fill memory
+        BRA BTSTLOOP2
+ENDLOOP2 MOVEA.L A4,A2
+        MOVE.B #$AA,D2
+
+BTSTLOOP3 CMP.L A2,A3
+        BLT GOOD
+        CMP.B #$AA,(A2)+        ;check read value
+        BNE BAD
+        BRA BTSTLOOP3
+
+BAD     SUBA.L #1,A2            ;go back to broken address
+
+        MOVEA.L #FAILURE,A1     ;print failure message
+        MOVE.B #13,D0
+        TRAP #15
+
+        MOVE.L A2,D1            ;print address
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.L #$3A,D1          ;print colon
+        MOVE.B #6,D0
+        TRAP #15
+
+        MOVE.L D2,D1            ;print data stored
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        
+        MOVE.L #$2C,D1          ;print comma
+        MOVE.B #6,D0
+        TRAP #15
+
+        MOVE.L (A2),D1          ;print data read
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        BRA EXBTST
+
+GOOD    MOVEA.L #SUCCESS,A1     ;print success message
+        MOVE.B #13,D0
+        TRAP #15
+
+EXBTST  MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
+        RTS
 
 *-----------------------------------------------------------
 * BSCH
@@ -509,7 +578,7 @@ BSCH    RTS
 *-----------------------------------------------------------
 * GO
 *-----------------------------------------------------------
-GO      
+GO      BSR ASCII               ;get address
         RTS
 
 *-----------------------------------------------------------
@@ -600,6 +669,7 @@ EXITASCII MOVEM.L (SP)+,D0      ;restore registers
         RTS
 
         END START
+
 
 
 
