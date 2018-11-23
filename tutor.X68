@@ -625,7 +625,13 @@ ENDSCH  MOVEM.L (SP)+,D0/D1/D2/A1/A2/A3/A4/A5
 *-----------------------------------------------------------
 * GO
 *-----------------------------------------------------------
-GO      BSR ASCII               ;get address
+GO      MOVEM.L D1/A1,-(SP)
+
+        BSR ASCII               ;get address
+        MOVEA.L D1,A1           ;use arbitrary address
+        JSR 0(A1)
+
+        MOVEM.L (SP)+,D1/A1
         RTS
 
 *-----------------------------------------------------------
@@ -715,9 +721,17 @@ CHAR    MOVE.B (A1)+,D0         ;move digit
 EXITASCII MOVEM.L (SP)+,D0      ;restore registers
         RTS
 
+        ORG $50
+TEST    DC.B 'Hello World!',0
+
+        ORG $100
+        MOVEA.L #TEST,A1
+        MOVE.B #13,D0
+        TRAP #15
+
+        RTS
+
         END START
-
-
 
 
 
