@@ -935,70 +935,136 @@ DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
 *-----------------------------------------------------------
 * Bus error exception
 *-----------------------------------------------------------
-BUS     MOVEA.L #BUS_MSG,A1
+BUS     MOVEM.L D0/A1,-(SP)
+        
+        MOVEA.L #BUS_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+
+        CLR     D1
+        SUBA.W  #$2,A7          ;move SSP to point to SSW
+        MOVE.L  (A7)+,D1        ;print SSW
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     SPACE
+
+        CLR     D1
+        MOVE.L  (A7)+,D1        ;print BA
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     SPACE
+
+        CLR     D1
+        MOVE.W  (A7)+,D1        ;print IR
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     CRLF
+
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Address error exception
 *-----------------------------------------------------------
-ADDR    MOVEA.L #ADDR_MSG,A1
+ADDR    MOVEM.L D0/D1/D2/A1,-(SP)
+        
+        MOVEA.L #ADDR_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+
+        CLR     D1
+        SUBA.W  #$2,A7          ;move SSP to point to SSW
+        MOVE.L  (A7)+,D1        ;print SSW
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     SPACE
+
+        CLR     D1
+        MOVE.L  (A7)+,D1        ;print BA
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     SPACE
+
+        CLR     D1
+        MOVE.W  (A7)+,D1        ;print IR
+        MOVE.B  #16,D2
+        MOVE.B  #15,D0
+        TRAP    #15
+
+        BSR     CRLF
+        
+        MOVEM.L (SP)+,D0/D1/D2/A1
         RTE
 
 *-----------------------------------------------------------
 * Illegal instruction exception
 *-----------------------------------------------------------
-ILLI    MOVEA.L #ILLI_MSG,A1
+ILLI    MOVEM.L D0/A1,-(SP)
+        MOVEA.L #ILLI_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Privilege violation exception
 *-----------------------------------------------------------
-PRIV    MOVEA.L #PRIV_MSG,A1
+PRIV    MOVEM.L D0/A1,-(SP)
+        MOVEA.L #PRIV_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Divide by zero exception
 *-----------------------------------------------------------
-DIV0    MOVEA.L #DIV0_MSG,A1
+DIV0    MOVEM.L D0/A1,-(SP)
+        MOVEA.L #DIV0_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Check instruction exception
 *-----------------------------------------------------------
-CHK     MOVEA.L #CHK_MSG,A1
+CHK     MOVEM.L D0/A1,-(SP)
+        MOVEA.L #CHK_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Line A emulator exception
 *-----------------------------------------------------------
-LNEA    MOVEA.L #LNEA_MSG,A1
+LNEA    MOVEM.L D0/A1,-(SP)
+        MOVEA.L #LNEA_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
 
 *-----------------------------------------------------------
 * Line F emulator exception
 *-----------------------------------------------------------
-LNEF    MOVEA.L #LNEF_MSG,A1
+LNEF    MOVEM.L D0/A1,-(SP)
+        MOVEA.L #LNEF_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        MOVEM.L (SP)+,D0/A1
         RTE
-
-*-----------------------------------------------------------
-* STACK: Get SSW, BA, IR
-*-----------------------------------------------------------
 
 *-----------------------------------------------------------
 * DIGIT: convert single ascii digit to hex
@@ -1071,14 +1137,11 @@ TEST    DC.B    'Hello World!',0
         MOVEA.L #TEST,A1
         MOVE.B  #13,D0
         TRAP    #15
-
         RTS
 
         ORG     $200
-ADDRLOOP MOVE.W D0,A1
+        MOVE.W  D0,A1
         MOVE.W  D1,(A1)+
-        BRA     ADDRLOOP
-
         RTS
 
         ORG     $300
