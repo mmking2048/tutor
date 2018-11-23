@@ -60,6 +60,28 @@ REGA5   DC.B    'A5=',0
 REGA6   DC.B    'A6=',0
 REGA7   DC.B    'A7=',0
 
+REGVAL  DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+        DS.L    1
+
 HELP1   DC.B    'HELP: displays this help message',0
 HELP2   DC.B    'MDSP <address1> <address2>: outputs address and memory contents from <address1> to <address2>',0
 HELP2A  DC.B    'MDSP <address1>: outputs address and memory from <address1> to <address + 16 bytes',0
@@ -77,18 +99,32 @@ HELP12  DC.B    'EXIT: terminate the program',0
 SUCCESS DC.B    'BTST successful',0
 FAILURE DC.B    'BTST failed',0
 
+BUS_MSG  DC.B   'Bus error occurred',0
+ADDR_MSG DC.B   'Address error occurred',0
+ILLI_MSG DC.B   'Illegal instruction error occurred',0
+DIV0_MSG DC.B   'Divide by zero error occurred',0
+CHK_MSG  DC.B   'Check error occurred',0
+PRIV_MSG DC.B   'Privilege violation error occurred',0
+LNEA_MSG DC.B   'Line 1010 error occurred',0
+LNEF_MSG DC.B   'Line 1111 error occurred',0
+
 *-----------------------------------------------------------
 * Program segment
 *-----------------------------------------------------------        
-        ORG     $3000
-*Start here: set up and call to main        
-START   BSR     SETUP           ;set up here
+        ORG     $3000       
+*-----------------------------------------------------------
+* Start here: set up and call to main
+*-----------------------------------------------------------
+START   ;BSR     SAVE            ;save register values in memory
+        BSR     SETUP           ;set up here
         BSR     MAIN            ;call main
         
         MOVE.B  #9,D0           ;exit program
         TRAP    #15
         
+*-----------------------------------------------------------
 * Main method
+*-----------------------------------------------------------
 MAIN    MOVEA.L #PROMPT,A1
         MOVE.B  #14,D0
         TRAP    #15             ;print prompt
@@ -109,14 +145,62 @@ EXITMAIN RTS
 *-----------------------------------------------------------
 * Setup exception handler
 *-----------------------------------------------------------
-SETUP   MOVE.L  BUS,$008
-        MOVE.L  ADDR,$00C
-        MOVE.L  ILLI,$010
-        MOVE.L  DIV0,$014
-        MOVE.L  CHK,$018
-        MOVE.L  PRIV,$020
-        MOVE.L  LNEA,$028
-        MOVE.L  LNEF,$02C
+SETUP   MOVE.L  #BUS,$008
+        MOVE.L  #ADDR,$00C
+        MOVE.L  #ILLI,$010
+        MOVE.L  #DIV0,$014
+        MOVE.L  #CHK,$018
+        MOVE.L  #PRIV,$020
+        MOVE.L  #LNEA,$028
+        MOVE.L  #LNEF,$02C
+        RTS
+
+*-----------------------------------------------------------
+* SAVE: save registers
+*-----------------------------------------------------------
+SAVE    MOVEM.L D0/A0/A1,-(SP)
+        MOVEM.L D0/A0/A1,-(SP)
+        MOVEM.L D0/A0/A1,-(SP)
+
+        MOVEA.L #REGVAL,A1
+
+        MOVE.L  0(PC),(A1)+
+        MOVE.W  SR,(A1)+
+        MOVE.L  A7,(A1)+        ;SSP
+
+        MOVE    SR,D0
+        BCLR    #13,D0          ;convert to user mode
+        MOVE    D0,SR
+        MOVE.L  A7,(A1)+        ;USP
+
+        MOVEM.L (SP)+,D0/A0/A1
+        MOVEA.L #REGVAL,A1
+        ADDA.L  #16,A1
+
+        MOVE.L  D0,(A1)+
+        MOVE.L  D1,(A1)+
+        MOVE.L  D2,(A1)+
+        MOVE.L  D3,(A1)+
+        MOVE.L  D4,(A1)+
+        MOVE.L  D5,(A1)+
+        MOVE.L  D6,(A1)+
+        MOVE.L  D7,(A1)+
+        MOVE.L  A0,(A1)+
+
+        MOVEM.L (SP)+,D0/A0/A1
+        MOVEA.L #REGVAL,A0
+        ADDA.L  #52,A0
+        MOVE.L  A1,(A0)+
+
+
+        MOVE.L  A2,(A0)+
+        MOVE.L  A3,(A0)+
+        MOVE.L  A4,(A0)+
+        MOVE.L  A5,(A0)+
+        MOVE.L  A6,(A0)+
+        MOVE.L  A7,(A0)+
+
+        MOVEM.L (SP)+,D0/A0/A1
         RTS
 
 *-----------------------------------------------------------
@@ -660,66 +744,78 @@ GO      MOVEM.L D1/A1,-(SP)
 *-----------------------------------------------------------
 * DF
 *-----------------------------------------------------------
-DF      MOVEM.L D0/D1/D2/A1,-(SP)
-        MOVEM.L D0/D1/D2/A1,-(SP)
-        MOVEM.L D0/D1/D2/A1,-(SP)
-        MOVEM.L D0/D1/D2/A1,-(SP)
-        MOVEM.L D0/D1/D2/A1,-(SP)
+DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
+
+        MOVEA.L #REGVAL,A0
 
         MOVEA.L #REGPC,A1
         MOVE.B #14,D0           ;print PC
         TRAP #15
-        BSR SPACE
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
 
         MOVEA.L #REGSR,A1
         MOVE.B #14,D0           ;print SR
         TRAP #15
-        BSR SPACE
+        MOVE.W (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
 
         MOVEA.L #REGUS,A1
         MOVE.B #14,D0           ;print US
         TRAP #15
-        BSR SPACE
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
 
         MOVEA.L #REGSS,A1
         MOVE.B #14,D0           ;print SS
+        TRAP #15
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
         TRAP #15
         BSR CRLF
 
         MOVEA.L #REGD0,A1
         MOVE.B #14,D0           ;print D0
         TRAP #15
-        MOVEM.L (SP)+,D0/D1/D2/A1 ;pull D0 off of stack
-        MOVE.L D0,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD1,A1
         MOVE.B #14,D0           ;print D1
         TRAP #15
-        MOVEM.L (SP)+,D0/D1/D2/A1 ;pull D1 off of stack
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD2,A1
         MOVE.B #14,D0           ;print D2
         TRAP #15
-        MOVEM.L (SP)+,D0/D1/D2/A1 ;pull D2 off of stack
-        MOVE.L D2,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD3,A1
         ADDA.L #4,A1
         MOVE.B #14,D0           ;print D3
         TRAP #15
-        MOVE.L D3,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
@@ -728,34 +824,34 @@ DF      MOVEM.L D0/D1/D2/A1,-(SP)
         MOVEA.L #REGD4,A1
         MOVE.B #14,D0           ;print D4
         TRAP #15
-        MOVE.L D4,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD5,A1
         MOVE.B #14,D0           ;print D5
         TRAP #15
-        MOVE.L D5,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD6,A1
         MOVE.B #14,D0           ;print D6
         TRAP #15
-        MOVE.L D6,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGD7,A1
         MOVE.B #14,D0           ;print D7
         TRAP #15
-        MOVE.L D7,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
@@ -764,35 +860,34 @@ DF      MOVEM.L D0/D1/D2/A1,-(SP)
         MOVEA.L #REGA0,A1
         MOVE.B #14,D0           ;print A0
         TRAP #15
-        MOVE.L A0,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGA1,A1
         MOVE.B #14,D0           ;print A1
         TRAP #15
-        MOVEM.L (SP)+,D0/D1/D2/A1 ;pull A1 off of stack
-        MOVE.L A1,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGA2,A1
         MOVE.B #14,D0           ;print A2
         TRAP #15
-        MOVE.L A2,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
-        BSR SPACE
+        BSR CRLF
 
         MOVEA.L #REGA3,A1
         MOVE.B #14,D0           ;print A3
         TRAP #15
-        MOVE.L A3,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
@@ -801,81 +896,109 @@ DF      MOVEM.L D0/D1/D2/A1,-(SP)
         MOVEA.L #REGA4,A1
         MOVE.B #14,D0           ;print A4
         TRAP #15
-        MOVE.L A4,D1            ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR SPACE
-
-        MOVEA.L #REGA5,A1
-        MOVE.B #14,D0           ;print A5
-        TRAP #15
-        MOVE.L A5,D1            ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR SPACE
-
-        MOVEA.L #REGA6,A1
-        MOVE.B #14,D0           ;print A6
-        TRAP #15
-        MOVE.L A6,D1            ;print value
-        MOVE.B #16,D2
-        MOVE.B #15,D0
-        TRAP #15
-        BSR SPACE
-
-        MOVEA.L #REGA7,A1
-        MOVE.B #14,D0           ;print A7
-        TRAP #15
-        MOVE.L A7,D1            ;print value
+        MOVE.L (A0)+,D1         ;print value
         MOVE.B #16,D2
         MOVE.B #15,D0
         TRAP #15
         BSR CRLF
 
-        MOVEM.L (SP)+,D0/D1/D2/A1
+        MOVEA.L #REGA5,A1
+        MOVE.B #14,D0           ;print A5
+        TRAP #15
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
+
+        MOVEA.L #REGA6,A1
+        MOVE.B #14,D0           ;print A6
+        TRAP #15
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
+
+        MOVEA.L #REGA7,A1
+        MOVE.B #14,D0           ;print A7
+        TRAP #15
+        MOVE.L (A0)+,D1         ;print value
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+        BSR CRLF
+
+        MOVEM.L (SP)+,D0/D1/D2/A0/A1
         RTS
 
 *-----------------------------------------------------------
 * Bus error exception
 *-----------------------------------------------------------
-BUS     RTE
+BUS     MOVEA.L #BUS_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Address error exception
 *-----------------------------------------------------------
-ADDR    RTE
+ADDR    MOVEA.L #ADDR_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Illegal instruction exception
 *-----------------------------------------------------------
-ILLI    RTE
+ILLI    MOVEA.L #ILLI_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Privilege violation exception
 *-----------------------------------------------------------
-PRIV    RTE
+PRIV    MOVEA.L #PRIV_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Divide by zero exception
 *-----------------------------------------------------------
-DIV0    RTE
+DIV0    MOVEA.L #DIV0_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Check instruction exception
 *-----------------------------------------------------------
-CHK     RTE
+CHK     MOVEA.L #CHK_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Line A emulator exception
 *-----------------------------------------------------------
-LNEA    RTE
+LNEA    MOVEA.L #LNEA_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
 
 *-----------------------------------------------------------
 * Line F emulator exception
 *-----------------------------------------------------------
-LNEF    RTE
+LNEF    MOVEA.L #LNEF_MSG,A1
+        MOVE.B #13,D0
+        TRAP #15
+        RTE
+
+*-----------------------------------------------------------
+* STACK: Get SSW, BA, IR
+*-----------------------------------------------------------
 
 *-----------------------------------------------------------
 * DIGIT: convert single ascii digit to hex
@@ -949,6 +1072,18 @@ TEST    DC.B 'Hello World!',0
         MOVE.B #13,D0
         TRAP #15
 
+        RTS
+
+        ORG $200
+ADDRLOOP MOVE.W D0,A1
+        MOVE.W D1,(A1)+
+        BRA ADDRLOOP
+
+        RTS
+
+        ORG $300
+        CLR D0
+        DIVS D0,D0
         RTS
 
         END START
