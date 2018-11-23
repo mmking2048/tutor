@@ -460,7 +460,20 @@ MS      MOVEM.L D1/A2,-(SP)
 *-----------------------------------------------------------
 * BF
 *-----------------------------------------------------------
-BF      
+BF      MOVEM.L D1/A2/A3,-(SP)
+
+        BSR ASCII               ;read start address
+        MOVEA.L D1,A2
+        BSR ASCII               ;read end address
+        MOVEA.L D1,A3
+        BSR ASCII               ;read data
+
+BFLOOP  CMP.L A2,A3
+        BLT EXBF
+        MOVE.W D1,(A2)+         ;write to memory
+        BRA BFLOOP
+
+EXBF    MOVEM.L (SP)+,D1/A2/A3
         RTS
 
 *-----------------------------------------------------------
