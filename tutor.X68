@@ -573,7 +573,54 @@ EXBTST  MOVEM.L (SP)+,D0/D1/D2/A2/A3/A4
 *-----------------------------------------------------------
 * BSCH
 *-----------------------------------------------------------
-BSCH    RTS
+BSCH    MOVEM.L D0/D1/D2/A1/A2/A3/A4/A5,-(SP)
+
+        BSR ASCII               ;get start address
+        MOVEA.L D1,A2
+        MOVEA.L A2,A5
+        BSR ASCII               ;get end address
+        MOVEA.L D1,A3
+        MOVEA.L A1,A4           ;save start of search string
+
+        CLR.L D0
+LENSCH  CMP.B #$00,(A1)+        ;get length of search string
+        BEQ SAVELEN     
+        ADDI.L #1,D0
+        BRA LENSCH
+
+SAVELEN MOVE.L D0,D3
+
+SCHLOOP MOVEA.L A4,A1           ;restore to start of search
+        MOVEA.L A5,A2           ;check with next char
+        MOVE.L D3,D0            ;restore search length
+        CMP.L A2,A3
+        BLT ENDSCH
+
+        ADDA.L #1,A5            ;next starting point
+
+SCHFIND CMP.B   (A1)+,(A2)+     ;does string match?
+        DBNE    D0,SCHFIND      ;check next character
+        BNE     SCHLOOP
+
+        SUBA.L #1,A5            ;go back to starting address
+        MOVE.L A5,D1            ;print address
+        MOVE.B #16,D2
+        MOVE.B #15,D0
+        TRAP #15
+
+        MOVE.L #$3A,D1          ;print colon
+        MOVE.B #6,D0
+        TRAP #15
+
+        MOVE.L A5,A1            ;print data
+        MOVE.B #13,D0
+        TRAP #15
+
+        ADDA.L #1,A5            ;restore to next starting address
+        BRA SCHLOOP
+
+ENDSCH  MOVEM.L (SP)+,D0/D1/D2/A1/A2/A3/A4/A5
+        RTS
 
 *-----------------------------------------------------------
 * GO
