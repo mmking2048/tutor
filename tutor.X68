@@ -36,6 +36,8 @@ COMP_TBL                        ;table of all commands
         DS.B    3
         DC.B    'DF',0
         DS.B    4
+        DC.B    'ECHO ',0
+        DS.B    1
         DC.B    'EXIT',0
         DS.B    2
 
@@ -325,6 +327,16 @@ PDF     CMP.B   (A1)+,(A3)+     ;is command DF?
         BRA     EXITPARSE       ;if all chars matched, exit
 
 NDF     MOVEA.L #INPUT,A1
+        BSR     NCHAR
+        MOVE.L  #4,D0
+
+PECHO   CMP.B   (A1)+,(A3)+     ;is command ECHO?
+        DBNE    D0,PECHO        ;check next character
+        BNE     NECHO
+        BSR     ECHO
+        BRA     EXITPARSE       ;if all chars matched, exit
+
+NECHO   MOVEA.L #INPUT,A1
         BSR     NCHAR
         MOVE.L  #4,D0
 
@@ -930,6 +942,15 @@ DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
         BSR     CRLF
 
         MOVEM.L (SP)+,D0/D1/D2/A0/A1
+        RTS
+
+*-----------------------------------------------------------
+* ECHO
+*-----------------------------------------------------------
+ECHO    MOVEM.L D0,-(SP)
+        MOVE.B  #13,D0          ;echo input
+        TRAP #15
+        MOVEM.L (SP)+,D0
         RTS
 
 *-----------------------------------------------------------
