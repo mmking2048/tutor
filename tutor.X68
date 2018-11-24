@@ -188,6 +188,7 @@ SAVE    MOVEM.L D0/A0/A1,-(SP)
         MOVEA.L #REGVAL,A1
 
         MOVE.L  0(PC),(A1)+
+        MOVE.W  #0,(A1)+
         MOVE.W  SR,(A1)+
         MOVE.L  A7,(A1)+        ;SSP
         MOVE.L  SP,(A1)+        ;USP
