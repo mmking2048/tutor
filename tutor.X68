@@ -96,7 +96,8 @@ HELP8   DC.B    'BTST <address1> <address2>: test a block of memory between <add
 HELP9   DC.B    'BSCH <address1> <address2> <string>: search for <string> between <address1> and <address2>',0
 HELP10  DC.B    'GO <address>: execute program at <address>',0
 HELP11  DC.B    'DF: display registers and values',0
-HELP12  DC.B    'EXIT: terminate the program',0
+HELP12  DC.B    'ECHO <data>: prints <data> to terminal',0
+HELP13  DC.B    'EXIT: terminate the program',0
 
 SUCCESS DC.B    'BTST successful',0
 FAILURE DC.B    'BTST failed',0
@@ -409,6 +410,10 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
         TRAP    #15
 
         MOVEA.L #HELP12,A1
+        MOVE.B  #13,D0
+        TRAP    #15
+
+        MOVEA.L #HELP13,A1
         MOVE.B  #13,D0
         TRAP    #15
 
