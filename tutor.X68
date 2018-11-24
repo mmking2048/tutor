@@ -38,6 +38,8 @@ COMP_TBL                        ;table of all commands
         DS.B    4
         DC.B    'ECHO ',0
         DS.B    1
+        DC.B    '. ',0
+        DS.B    4
         DC.B    'EXIT',0
         DS.B    2
 
@@ -84,6 +86,23 @@ REGVAL  DS.L    1
         DS.L    1
         DS.L    1
 
+REGNAME DC.B    $D0
+        DC.B    $D1
+        DC.B    $D2
+        DC.B    $D3
+        DC.B    $D4
+        DC.B    $D5
+        DC.B    $D6
+        DC.B    $D7
+        DC.B    $A0
+        DC.B    $A1
+        DC.B    $A2
+        DC.B    $A3
+        DC.B    $A4
+        DC.B    $A5
+        DC.B    $A6
+        DC.B    $A7
+
 HELP1   DC.B    'HELP: displays this help message',0
 HELP2   DC.B    'MDSP <address1> <address2>: outputs address and memory contents from <address1> to <address2>',0
 HELP2A  DC.B    'MDSP <address1>: outputs address and memory from <address1> to <address + 16 bytes',0
@@ -97,10 +116,13 @@ HELP9   DC.B    'BSCH <address1> <address2> <string>: search for <string> betwee
 HELP10  DC.B    'GO <address>: execute program at <address>',0
 HELP11  DC.B    'DF: display registers and values',0
 HELP12  DC.B    'ECHO <data>: prints <data> to terminal',0
-HELP13  DC.B    'EXIT: terminate the program',0
+HELP13  DC.B    '. <reg> <data>: put data into register specified, e.g. .D0 1000',0
+HELP14  DC.B    'EXIT: terminate the program',0
 
 SUCCESS DC.B    'BTST successful',0
 FAILURE DC.B    'BTST failed',0
+
+BADREG  DC.B    'Register not found',0
 
 BUS_MSG  DC.B   'Bus error occurred',0
 ADDR_MSG DC.B   'Address error occurred',0
@@ -168,7 +190,7 @@ SAVE    MOVEM.L D0/A0/A1,-(SP)
         MOVE.L  0(PC),(A1)+
         MOVE.W  SR,(A1)+
         MOVE.L  A7,(A1)+        ;SSP
-        MOVE.L  SP,(A1)+       ;USP
+        MOVE.L  SP,(A1)+        ;USP
 
         MOVEA.L #REGVAL,A1
         ADDA.L  #16,A1
@@ -332,6 +354,16 @@ PECHO   CMP.B   (A1)+,(A3)+     ;is command ECHO?
 
 NECHO   MOVEA.L #INPUT,A1
         BSR     NCHAR
+        MOVE.L  #1,D0
+
+PMOD    CMP.B   (A1)+,(A3)+     ;is command ECHO?
+        DBNE    D0,PMOD         ;check next character
+        BNE     NMOD
+        BSR     REGMOD
+        BRA     EXITPARSE       ;if all chars matched, exit
+
+NMOD   MOVEA.L #INPUT,A1
+        BSR     NCHAR
         MOVE.L  #4,D0
 
 PEXIT   CMP.B   (A1)+,(A3)+     ;is command EXIT?
@@ -414,6 +446,10 @@ HELP    MOVEM.L D0/A1,-(SP)     ;save registers
         TRAP    #15
 
         MOVEA.L #HELP13,A1
+        MOVE.B  #13,D0
+        TRAP    #15
+
+        MOVEA.L #HELP14,A1
         MOVE.B  #13,D0
         TRAP    #15
 
@@ -770,7 +806,7 @@ DF      MOVEM.L D0/D1/D2/A0/A1,-(SP)
         MOVEA.L #REGSR,A1
         MOVE.B  #14,D0          ;print SR
         TRAP    #15
-        MOVE.W  (A0)+,D1        ;print value
+        MOVE.L  (A0)+,D1        ;print value
         MOVE.B  #16,D2
         MOVE.B  #15,D0
         TRAP    #15
@@ -949,6 +985,37 @@ ECHO    MOVEM.L D0,-(SP)
         MOVE.B  #13,D0          ;echo input
         TRAP #15
         MOVEM.L (SP)+,D0
+        RTS
+
+*-----------------------------------------------------------
+* REGMOD
+*-----------------------------------------------------------
+REGMOD  MOVEM.L D0/D1/D2/A1/A2,-(SP)
+
+        CLR     D0
+        BSR     ASCII           ;get register
+        MOVE.L  D1,D2
+        BSR     ASCII           ;get data
+
+        MOVEA.L #REGVAL,A1
+        ADDA.L  #16,A1
+        MOVEA.L #REGNAME,A2
+
+MODLOOP CMP.B   (A2)+,D2
+        BEQ     MODFOUND
+        ADDA.L  #4,A1
+        ADDI.B  #1,D0
+        CMP.B   #16,D0
+        BGT     NOTFOUND
+        BRA     MODLOOP
+
+NOTFOUND MOVEA.L #BADREG,A1
+        MOVE.B  #13,D0
+        TRAP    #15
+        BRA EXREGMOD
+
+MODFOUND MOVE.L D1,(A1)
+EXREGMOD MOVEM.L (SP)+,D0/D1/D2/A1/A2
         RTS
 
 *-----------------------------------------------------------
@@ -1169,6 +1236,7 @@ TEST    DC.B    'Hello World!',0
         RTS
 
         END     START
+
 
 
 
