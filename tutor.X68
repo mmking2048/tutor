@@ -117,7 +117,7 @@ LNEF_MSG DC.B   'Line 1111 error occurred',0
 *-----------------------------------------------------------
 * Start here: set up and call to main
 *-----------------------------------------------------------
-START   ;BSR     SAVE            ;save register values in memory
+START   BSR     SAVE            ;save register values in memory
         BSR     SETUP           ;set up here
         BSR     MAIN            ;call main
         
@@ -162,20 +162,13 @@ SETUP   MOVE.L  #BUS,$008
 *-----------------------------------------------------------
 SAVE    MOVEM.L D0/A0/A1,-(SP)
         MOVEM.L D0/A0/A1,-(SP)
-        MOVEM.L D0/A0/A1,-(SP)
-
         MOVEA.L #REGVAL,A1
 
         MOVE.L  0(PC),(A1)+
         MOVE.W  SR,(A1)+
         MOVE.L  A7,(A1)+        ;SSP
+        MOVE.L  SP,(A1)+       ;USP
 
-        MOVE    SR,D0
-        BCLR    #13,D0          ;convert to user mode
-        MOVE    D0,SR
-        MOVE.L  A7,(A1)+        ;USP
-
-        MOVEM.L (SP)+,D0/A0/A1
         MOVEA.L #REGVAL,A1
         ADDA.L  #16,A1
 
@@ -1171,6 +1164,7 @@ TEST    DC.B    'Hello World!',0
         RTS
 
         END     START
+
 
 
 
