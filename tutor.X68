@@ -1052,6 +1052,7 @@ BUS     MOVEM.L D0/A1,-(SP)
         TRAP    #15
 
         BSR     CRLF
+        BSR     DF
 
         MOVEM.L (SP)+,D0/A1
         RTE
@@ -1089,6 +1090,7 @@ ADDR    MOVEM.L D0/D1/D2/A1,-(SP)
         TRAP    #15
 
         BSR     CRLF
+        BSR     DF
         
         MOVEM.L (SP)+,D0/D1/D2/A1
         RTE
@@ -1100,6 +1102,7 @@ ILLI    MOVEM.L D0/A1,-(SP)
         MOVEA.L #ILLI_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
@@ -1110,6 +1113,7 @@ PRIV    MOVEM.L D0/A1,-(SP)
         MOVEA.L #PRIV_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
@@ -1120,6 +1124,7 @@ DIV0    MOVEM.L D0/A1,-(SP)
         MOVEA.L #DIV0_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
@@ -1130,6 +1135,7 @@ CHK     MOVEM.L D0/A1,-(SP)
         MOVEA.L #CHK_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
@@ -1140,6 +1146,7 @@ LNEA    MOVEM.L D0/A1,-(SP)
         MOVEA.L #LNEA_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
@@ -1150,6 +1157,7 @@ LNEF    MOVEM.L D0/A1,-(SP)
         MOVEA.L #LNEF_MSG,A1
         MOVE.B  #13,D0
         TRAP    #15
+        BSR     DF
         MOVEM.L (SP)+,D0/A1
         RTE
 
